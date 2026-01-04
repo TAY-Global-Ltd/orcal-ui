@@ -1,0 +1,44 @@
+{
+  "name": "llm-ui-components",
+  "description": "LLM UI Components",
+  "version": "0.1.1",
+  "private": true,
+  "scripts": {
+    "start": "cross-env NODE_ENV=development rollup -cw",
+    "build": "cross-env NODE_ENV=production rollup -c",
+    "clean": "del-cli --force dist node_modules && npm i",
+    "deploy": "bash deploy-to-docs.sh"
+  },
+  "peerDependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.562.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.3",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-react": "^7.18.6",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@tailwindcss/postcss": "^4.1.18",
+    "autoprefixer": "^10.4.23",
+    "cross-env": "^7.0.3",
+    "del-cli": "^5.0.0",
+    "less": "^4.1.3",
+    "livereload": "^0.9.3",
+    "postcss": "^8.5.6",
+    "rollup": "^2.79.1",
+    "rollup-plugin-external-globals": "^0.7.3",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-output-manifest": "^2.0.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-serve": "^2.0.2",
+    "tailwindcss": "^4.1.18"
+  }
+}

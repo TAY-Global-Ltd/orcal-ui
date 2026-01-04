@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orcal UI Components Demo</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 40px;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+        }
+
+        .container {
+            width: 90%;
+            margin: 0 auto;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .component-section {
+            margin-bottom: 24px;
+            padding: 16px;
+            border: 1px solid #e5e5e7;
+            border-radius: 8px;
+        }
+
+        .component-label {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: block;
+            color: #86868b;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="module">
+        import components from "./dist/custom-components-main.js";
+
+        const { TeamBuilder } = components.v1;
+
+        // Mock withBindings for local testing
+        const withBindings = (Component) => (props) => {
+            const [value, setValue] = React.useState(props.value || "Initial Value");
+            const bindings = { value: "some-key" };
+            const mockSetValue = (key, val) => {
+                console.log(`Setting ${key} to:`, val);
+                setValue(val);
+            };
+
+            return React.createElement(Component, {
+                ...props,
+                value,
+                setValue: mockSetValue,
+                bindings
+            });
+        };
+
+        // Content Creation & Analysis Workflow
+        // Branching pipeline showing parallel processing paths:
+        //           Research (1)
+        //          /     |      \
+        //     Write(2) Analyze(4) Translate(5)
+        //        |        |
+        //    Optimize(3) Summarize(6)
+        //        \       /
+        //       Social(7)
+        const demoNodes = [
+            // Start: Research (far left)
+            { id: '1', x: 50, y: 300, data: { label: 'Research', agentPath: ['Shared', 'Data Analysis', 'Market Trends'] } },
+            
+            // Branch 1: Content creation path (top branch)
+            { id: '2', x: 449, y: 73, data: { label: 'Write', agentPath: ['Shared', 'Content Creation', 'Blog Writer'] } },
+            { id: '3', x: 842, y: 86, data: { label: 'Optimize', agentPath: ['Shared', 'Content Creation', 'SEO Optimizer'] } },
+            
+            // Branch 2: Analysis path (middle branch)
+            { id: '4', x: 468, y: 294, data: { label: 'Analyze', agentPath: ['Shared', 'Data Analysis', 'Sentiment Analyzer'] } },
+            { id: '6', x: 809, y: 293, data: { label: 'Summarize', agentPath: ['Shared', 'Utility', 'Summarizer'] } },
+            
+            // Branch 3: Translation path (bottom branch)
+            { id: '5', x: 566, y: 561, data: { label: 'Translate', agentPath: ['Shared', 'Utility', 'Translator'] } },
+            
+            // Convergence: Social media (far right)
+            { id: '7', x: 1353, y: 282, data: { label: 'Social', agentPath: ['Shared', 'Content Creation', 'Tweet Generator'] } },
+        ];
+
+        const demoEdges = [
+            // Research branches to three parallel paths
+            { id: 'e1-2', source: '1', target: '2' },
+            { id: 'e1-4', source: '1', target: '4' },
+            { id: 'e1-5', source: '1', target: '5' },
+            
+            // Content path: Write -> Optimize
+            { id: 'e2-3', source: '2', target: '3' },
+            
+            // Analysis path: Analyze -> Summarize
+            { id: 'e4-6', source: '4', target: '6' },
+            
+            // All paths converge to Social
+            { id: 'e3-7', source: '3', target: '7' },
+            { id: 'e6-7', source: '6', target: '7' },
+            { id: 'e5-7', source: '5', target: '7' }
+        ];
+
+        // Define workflow sequence: node IDs in order (shows branching execution)
+        // 1. Research starts, 2-5. Three parallel branches, 3&6. Process branches, 7. Converge
+        const workflowSequence = ['1', '2', '4', '5', '3', '6', '7'];
+        
+        // Map node IDs to agent paths (for activeNode prop)
+        const nodeToAgentPath = {
+            '1': 'Shared/Data Analysis/Market Trends',
+            '2': 'Shared/Content Creation/Blog Writer',
+            '3': 'Shared/Content Creation/SEO Optimizer',
+            '4': 'Shared/Data Analysis/Sentiment Analyzer',
+            '5': 'Shared/Utility/Translator',
+            '6': 'Shared/Utility/Summarizer',
+            '7': 'Shared/Content Creation/Tweet Generator'
+        };
+
+        // Messages for each node (multiple messages per node)
+        const nodeMessages = {
+            '1': [
+                `# 🔍 Research Phase Initiated
+
+Starting comprehensive market research analysis...
+
+**Tool**: \`fetchMarketData(topic="AI trends")\`
+**Status**: Collecting data from multiple sources`,
+                `# 📊 Data Collection Complete
+
+Gathered **1,247 data points** from:
+- Industry reports (Q4 2024)
+- Social media trends
+- Academic papers
+- News articles
+
+**Key Insight**: AI adoption increased by **34%** YoY`,
+                `# ✅ Research Summary Ready
+
+**Findings**:
+- Primary trend: Enterprise AI integration
+- Secondary trend: Consumer AI tools
+- Emerging: AI governance frameworks
+
+Distributing to **3 parallel processing branches**:
+→ Content Creation, Analysis, Translation`
+            ],
+            '2': [
+                `# ✍️ Content Writing Started
+
+Analyzing research data and structuring article outline...
+
+**Approach**: Data-driven storytelling with actionable insights`,
+                `# 📝 Draft Generation
+
+Writing blog post based on research findings...
+
+**Structure**:
+1. Introduction (hook + problem statement)
+2. Main analysis (3 key trends)
+3. Practical applications
+4. Future outlook
+
+**Word count**: 1,247 words`,
+                `# ✅ Blog Post Complete
+
+**Title**: "The Future of AI: 3 Trends Shaping 2025"
+
+Article written with:
+- Clear narrative flow
+- Data-backed arguments
+- Engaging examples
+- Call-to-action included
+
+Ready for SEO optimization.`
+            ],
+            '3': [
+                `# 🎯 SEO Optimization Started
+
+Analyzing content for search engine optimization...
+
+**Tool**: \`analyzeSEO(content, targetKeywords)\``,
+                `# 🔧 Optimizing Content
+
+Applying SEO best practices:
+- Meta description: 155 characters ✓
+- Title tag optimization ✓
+- Header structure (H1-H3) ✓
+- Keyword density: 2.1% ✓
+- Internal linking: 5 links added`,
+                `# ✅ SEO Complete
+
+**Optimizations Applied**:
+- Primary keyword: "AI trends 2025" (density: 2.1%)
+- Secondary keywords: 8 variations
+- Meta tags optimized
+- Image alt text added
+- Schema markup prepared
+
+**Expected Impact**: +45% organic traffic potential
+→ Sending optimized content to Social Media pipeline`
+            ],
+            '4': [
+                `# 📈 Sentiment Analysis Started
+
+Evaluating emotional tone and sentiment of content...
+
+**Tool**: \`analyzeSentiment(text, model="vader")\``,
+                `# 🎭 Analyzing Tone
+
+Processing content through sentiment analysis pipeline...
+
+**Metrics**:
+- Overall sentiment: **Positive** (0.72)
+- Emotional markers detected
+- Readability score: 8.2/10`,
+                `# ✅ Sentiment Report
+
+**Results**:
+- **Sentiment Score**: 0.72 (Positive)
+- **Confidence**: 94%
+- **Tone**: Professional, optimistic, informative
+- **Emotional markers**: Excitement (high), Trust (high)
+
+Content is well-balanced and audience-appropriate.`
+            ],
+            '5': [
+                `# 🌍 Translation Started
+
+Preparing content for multilingual distribution...
+
+**Target Language**: Spanish (es-ES)
+**Tool**: \`translateText(content, source="en", target="es")\``,
+                `# 🔄 Translating Content
+
+Processing 1,247 words through translation pipeline...
+
+**Progress**: 67% complete
+- Preserving technical terms
+- Maintaining tone and style
+- Cultural adaptation applied`,
+                `# ✅ Translation Complete
+
+**Spanish Version Ready**:
+- Word count: 1,289 words (adjusted for language)
+- Cultural context adapted
+- Technical terms preserved
+- SEO keywords translated
+
+**Quality Score**: 96/100 (human-reviewed)
+→ Multilingual content ready for Social Media`
+            ],
+            '6': [
+                `# 📋 Summarization Started
+
+Creating concise summary of translated content...
+
+**Target Length**: 200-300 words
+**Tool**: \`summarizeText(content, maxLength=250)\``,
+                `# ✂️ Summarizing Content
+
+Extracting key points and main ideas...
+
+**Process**:
+- Identifying core themes
+- Preserving critical data points
+- Maintaining narrative flow
+- Condensing to 60% of original`,
+                `# ✅ Summary Generated
+
+**Executive Summary** (247 words):
+
+The article explores three major AI trends shaping 2025: enterprise integration (34% YoY growth), consumer AI tools expansion, and emerging governance frameworks. Key insights highlight practical applications and future outlook for businesses and individuals.
+
+**Reduction**: 1,289 → 247 words (81% reduction)
+→ Concise summary ready for Social Media distribution`
+            ],
+            '7': [
+                `# 🐦 Social Media Generation Started
+
+Receiving inputs from **3 parallel branches**:
+✓ Optimized content
+✓ Translated versions
+✓ Summary data
+
+**Platforms**: Twitter/X, LinkedIn, Facebook
+**Tool**: \`generateSocialPosts(inputs, platforms)\``,
+                `# 📱 Generating Posts
+
+Combining all branch outputs into cohesive social content:
+- SEO-optimized English version
+- Spanish translation
+- Concise summary points
+
+**Twitter/X**: 3 thread posts (280 chars each) + Spanish version
+**LinkedIn**: 1 professional post (1,300 chars)
+**Facebook**: 1 engaging post with image suggestion`,
+                `# ✅ Social Media Ready
+
+**Generated Posts**:
+
+🐦 **Twitter Thread** (3 tweets):
+1. "🚀 AI trends are reshaping 2025! Here's what you need to know..."
+2. "📊 Key finding: Enterprise AI adoption up 34% YoY..."
+3. "💡 What this means for your business → [link]"
+
+💼 **LinkedIn**: Professional post with insights
+📘 **Facebook**: Engaging post with visual suggestions
+
+**All posts**: Scheduled and ready for publication! 🎉`
+            ]
+        };
+
+        // Create components once (not inside render) to maintain stable references
+        const TeamBuilderComponent = TeamBuilder({ withBindings });
+
+        const App = () => {
+            const [activeNode, setActiveNode] = React.useState(null);
+            const [currentMessage, setCurrentMessage] = React.useState(null);
+            const [currentNodeIndex, setCurrentNodeIndex] = React.useState(-1);
+            const [currentMessageIndex, setCurrentMessageIndex] = React.useState(0);
+            const [isSimulationStarted, setIsSimulationStarted] = React.useState(false);
+            const timersRef = React.useRef([]);
+
+            const startSimulation = () => {
+                // Reset to beginning
+                setActiveNode(null);
+                setCurrentMessage(null);
+                setCurrentNodeIndex(0);
+                setCurrentMessageIndex(0);
+                setIsSimulationStarted(true);
+            };
+
+            const stopSimulation = () => {
+                // Clear all timers
+                timersRef.current.forEach(timer => clearTimeout(timer));
+                timersRef.current = [];
+                
+                // Reset state
+                setIsSimulationStarted(false);
+                setCurrentNodeIndex(-1);
+                setCurrentMessageIndex(0);
+                setActiveNode(null);
+                setCurrentMessage(null);
+            };
+
+            React.useEffect(() => {
+                if (!isSimulationStarted) return;
+            }, [isSimulationStarted]);
+
+            React.useEffect(() => {
+                if (currentNodeIndex < 0 || currentNodeIndex >= workflowSequence.length) {
+                    return;
+                }
+
+                const nodeId = workflowSequence[currentNodeIndex];
+                const agentPath = nodeToAgentPath[nodeId];
+                const messages = nodeMessages[nodeId];
+
+                // Activate the node
+                setActiveNode(agentPath);
+                setCurrentMessageIndex(0);
+
+                // Show first message after activation
+                const firstMessageTimer = setTimeout(() => {
+                    setCurrentMessage(messages[0]);
+                }, 100);
+                timersRef.current.push(firstMessageTimer);
+
+                // Cycle through messages (2 seconds each)
+                const messageTimers = [];
+                messages.forEach((message, index) => {
+                    if (index > 0) {
+                        const timer = setTimeout(() => {
+                            setCurrentMessage(messages[index]);
+                            setCurrentMessageIndex(index);
+                        }, 100 + (index * 2000));
+                        messageTimers.push(timer);
+                        timersRef.current.push(timer);
+                    }
+                });
+
+                // Hide message after last message (2 seconds display)
+                const hideMessageTimer = setTimeout(() => {
+                    setCurrentMessage(null);
+                }, 100 + (messages.length * 2000));
+                timersRef.current.push(hideMessageTimer);
+
+                // Move to next node after 1 second delay
+                const nextNodeTimer = setTimeout(() => {
+                    if (currentNodeIndex < workflowSequence.length - 1) {
+                        setCurrentNodeIndex(currentNodeIndex + 1);
+                    } else {
+                        // Workflow complete - deactivate and stop simulation
+                        const finalTimer = setTimeout(() => {
+                            setActiveNode(null);
+                            setIsSimulationStarted(false);
+                        }, 1000);
+                        timersRef.current.push(finalTimer);
+                    }
+                }, 100 + (messages.length * 2000) + 1000);
+                timersRef.current.push(nextNodeTimer);
+
+                return () => {
+                    clearTimeout(firstMessageTimer);
+                    clearTimeout(hideMessageTimer);
+                    clearTimeout(nextNodeTimer);
+                    messageTimers.forEach(timer => clearTimeout(timer));
+                };
+            }, [currentNodeIndex]);
+
+            return React.createElement('div', { className: 'container' },
+                React.createElement('h1', null, 'Orcal UI Components Demo'),
+
+                React.createElement('div', {
+                    className: 'component-section',
+                    style: { backgroundColor: '#f0f9ff', borderColor: '#0ea5e9' }
+                },
+                    React.createElement('span', { className: 'component-label' }, 'TeamBuilder - Interactive Graph Editor'),
+                    React.createElement('p', { style: { marginBottom: '12px', fontSize: '14px', color: '#64748b' } },
+                        'A full-featured node graph editor with branching workflows. Watch as Research branches into parallel paths (Content, Analysis, Translation) that converge at Social Media.'
+                    ),
+                    React.createElement('button', {
+                        onClick: isSimulationStarted ? stopSimulation : startSimulation,
+                        style: {
+                            padding: '12px 24px',
+                            marginBottom: '16px',
+                            backgroundColor: isSimulationStarted ? '#ef4444' : '#0ea5e9',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }
+                    }, isSimulationStarted ? 'Stop Simulation' : 'Start Simulation'),
+                    React.createElement('div', {
+                        style: {
+                            height: '600px',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            overflow: 'hidden'
+                        }
+                    },
+                        React.createElement(TeamBuilderComponent, {
+                            theme: 'light',
+                            initialEditable: false,
+                            activeNode: activeNode,
+                            initialNodes: demoNodes,
+                            initialEdges: demoEdges,
+                            currentMessage: currentMessage,
+                            handleSave: ({ nodes, edges }) => {
+                                console.log("Saved Nodes:", nodes);
+                                console.log("Saved Edges:", edges);
+                                alert("Saved!");
+                            },
+                            handleViewAgent: ({ agentPath }) => {
+                                alert("View Agent: " + agentPath);
+                            },
+                            handleEditAgent: ({ agentPath }) => {
+                                alert("Edit Agent: " + agentPath);
+                            }
+                        })
+                    )
+                )
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+</body>
+
+</html>
