@@ -17,7 +17,6 @@ cp index.html docs/index.html
 # Copy dist files directly to docs
 echo "📦 Copying dist files..."
 cp dist/custom-components-main.js docs/
-cp dist/custom-components-main-7d1b2d5e.js docs/
 cp dist/manifest.json docs/
 
 # Update import path in docs/index.html
@@ -35,7 +34,6 @@ echo ""
 echo "📁 Files copied to docs/:"
 echo "   - index.html"
 echo "   - custom-components-main.js"
-echo "   - custom-components-main-7d1b2d5e.js"
 echo "   - manifest.json"
 echo ""
 echo "🌐 Your demo is ready for GitHub Pages!"
