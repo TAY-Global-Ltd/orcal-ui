@@ -11,8 +11,6 @@ This library provides production-ready UI components for building and visualizin
 🔗 **[Live Demo](https://tay-global-ltd.github.io/orcal-ui/)**
 
 
-https://TAY-Global-Ltd.github.com/orcal-ui/
-
 Check out the interactive demo to see the TeamBuilder component in action with a simulated multi-agent workflow.
 
 ## Components
