@@ -335,6 +335,7 @@ Combining all branch outputs into cohesive social content:
             const [currentNodeIndex, setCurrentNodeIndex] = React.useState(-1);
             const [currentMessageIndex, setCurrentMessageIndex] = React.useState(0);
             const [isSimulationStarted, setIsSimulationStarted] = React.useState(false);
+            const [showPrompt, setShowPrompt] = React.useState(false);
             const timersRef = React.useRef([]);
 
             const startSimulation = () => {
@@ -357,6 +358,11 @@ Combining all branch outputs into cohesive social content:
                 setCurrentMessageIndex(0);
                 setActiveNode(null);
                 setCurrentMessage(null);
+            };
+
+            const handlePrompt = (prompt) => {
+                console.log("User Prompt:", prompt);
+                startSimulation();
             };
 
             React.useEffect(() => {
@@ -435,21 +441,36 @@ Combining all branch outputs into cohesive social content:
                     React.createElement('p', { style: { marginBottom: '12px', fontSize: '14px', color: '#64748b' } },
                         'A full-featured node graph editor with branching workflows. Watch as Research branches into parallel paths (Content, Analysis, Translation) that converge at Social Media.'
                     ),
-                    React.createElement('button', {
-                        onClick: isSimulationStarted ? stopSimulation : startSimulation,
-                        style: {
-                            padding: '12px 24px',
-                            marginBottom: '16px',
-                            backgroundColor: isSimulationStarted ? '#ef4444' : '#0ea5e9',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }
-                    }, isSimulationStarted ? 'Stop Simulation' : 'Start Simulation'),
+                    React.createElement('div', { className: 'flex gap-2 mb-4' },
+                        React.createElement('button', {
+                            onClick: isSimulationStarted ? stopSimulation : startSimulation,
+                            style: {
+                                padding: '12px 24px',
+                                backgroundColor: isSimulationStarted ? '#ef4444' : '#0ea5e9',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }
+                        }, isSimulationStarted ? 'Stop Simulation' : 'Start Simulation'),
+                        React.createElement('button', {
+                            onClick: () => setShowPrompt(!showPrompt),
+                            style: {
+                                padding: '12px 24px',
+                                backgroundColor: showPrompt ? '#10b981' : '#64748b',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }
+                        }, showPrompt ? 'Hide Input Prompt' : 'Show Input Prompt')
+                    ),
                     React.createElement('div', {
                         style: {
                             height: '600px',
@@ -465,6 +486,8 @@ Combining all branch outputs into cohesive social content:
                             initialNodes: demoNodes,
                             initialEdges: demoEdges,
                             currentMessage: currentMessage,
+                            isFollowingActive: isSimulationStarted,
+                            handlePrompt: showPrompt ? handlePrompt : undefined,
                             handleSave: ({ nodes, edges }) => {
                                 console.log("Saved Nodes:", nodes);
                                 console.log("Saved Edges:", edges);
