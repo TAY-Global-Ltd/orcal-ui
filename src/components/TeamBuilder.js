@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import "../tailwind.css";
-import { Settings, X, Plus, Play, Trash2, ChevronRight, ChevronDown, Check, Users, Save, Pencil, Home, AlertTriangle, Eye, Edit } from 'lucide-react';
+import { Settings, X, Plus, Play, Trash2, ChevronRight, ChevronDown, Check, Users, Save, Pencil, Home, AlertTriangle, Eye, Edit, Send } from 'lucide-react';
 
 /**
  * MOCK DATA
@@ -488,15 +488,33 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
 /**
  * MAIN APP COMPONENT
  */
-function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], initialEdges = [], handleSave, handleView, handleEdit, initialEditable = false, currentMessage }) {
+function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], initialEdges = [], handleSave, handleView, handleEdit, initialEditable = false, currentMessage, handlePrompt, isFollowingActive: shouldFollow }) {
     const [nodes, setNodes] = useState(initialNodes);
     const [edges, setEdges] = useState(initialEdges);
+
+    // Prompt State
+    const [promptInput, setPromptInput] = useState('');
+
+    const handleSendPrompt = () => {
+        if (!promptInput.trim()) return;
+        if (handlePrompt) {
+            handlePrompt(promptInput);
+        }
+        setPromptInput('');
+    };
 
     // Mode State
     const [isEditing, setIsEditing] = useState(initialEditable);
     const [restorePoint, setRestorePoint] = useState({ nodes: initialNodes, edges: initialEdges });
     const [confirmResetOpen, setConfirmResetOpen] = useState(false);
     const [isFollowingActive, setIsFollowingActive] = useState(true);
+
+    // Sync external following state trigger
+    useEffect(() => {
+        if (shouldFollow) {
+            setIsFollowingActive(true);
+        }
+    }, [shouldFollow]);
 
     // Interaction State
     const [draggingNode, setDraggingNode] = useState(null);
@@ -1146,6 +1164,38 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                         })}
                     </div>
                 </div>
+
+                {/* Prompt Box */}
+                {!isEditing && handlePrompt && !activeNode && (
+                    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 z-30 pointer-events-auto">
+                        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-2 flex items-end gap-2">
+                            <textarea
+                                value={promptInput}
+                                onChange={(e) => setPromptInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendPrompt();
+                                    }
+                                }}
+                                placeholder="Message Team Builder..."
+                                className="w-full max-h-32 min-h-[44px] py-3 px-4 bg-transparent border-0 focus:ring-0 resize-none text-slate-800 placeholder:text-slate-400 text-sm focus:outline-none"
+                                rows={1}
+                            />
+                            <button
+                                onClick={handleSendPrompt}
+                                disabled={!promptInput.trim()}
+                                className={`p-2 rounded-xl mb-1 transition-colors ${
+                                    promptInput.trim() 
+                                        ? 'bg-slate-900 text-white hover:bg-slate-700' 
+                                        : 'bg-slate-100 text-slate-300'
+                                }`}
+                            >
+                                <Send size={18} />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Footer Info */}
