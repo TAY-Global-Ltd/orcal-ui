@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import "../tailwind.css";
 import { Settings, X, Plus, Play, Trash2, ChevronRight, ChevronDown, Check, Users, Save, Pencil, Home, AlertTriangle, Eye, Edit, Send } from 'lucide-react';
 
@@ -24,143 +25,26 @@ const AGENT_TREE = {
  */
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
-// Simple markdown renderer
-const renderMarkdown = (text) => {
-    if (!text) return null;
-    
-    const elements = [];
-    let currentIdx = 0;
-    
-    // First, extract code blocks
-    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-    const codeBlocks = [];
-    let codeBlockIdx = 0;
-    let processedText = text.replace(codeBlockRegex, (match, lang, code) => {
-        const id = `__CODEBLOCK_${codeBlockIdx++}__`;
-        codeBlocks.push({ id, lang: lang || '', code: code.trim() });
-        return id;
-    });
-    
-    // Split by double newlines for paragraphs
-    const paragraphs = processedText.split(/\n\n+/);
-    
-    paragraphs.forEach((para, idx) => {
-        para = para.trim();
-        if (!para) return;
-        
-        // Check if this is a code block placeholder
-        if (para.startsWith('__CODEBLOCK_')) {
-            const codeId = para.replace(/__CODEBLOCK_|__/g, '');
-            const codeBlock = codeBlocks.find(cb => cb.id === `__CODEBLOCK_${codeId}__`);
-            if (codeBlock) {
-                elements.push(React.createElement('pre', { 
-                    key: `code-${idx}`, 
-                    className: 'bg-slate-800 text-slate-100 p-3 rounded text-xs overflow-x-auto my-2' 
-                }, React.createElement('code', null, codeBlock.code)));
-            }
-            return;
-        }
-        
-        // Headers
-        if (para.startsWith('# ')) {
-            elements.push(React.createElement('h1', { key: idx, className: 'text-xl font-bold mb-2 mt-4 first:mt-0' }, para.substring(2)));
-            return;
-        }
-        if (para.startsWith('## ')) {
-            elements.push(React.createElement('h2', { key: idx, className: 'text-lg font-semibold mb-2 mt-3 first:mt-0' }, para.substring(3)));
-            return;
-        }
-        if (para.startsWith('### ')) {
-            elements.push(React.createElement('h3', { key: idx, className: 'text-base font-semibold mb-1 mt-2 first:mt-0' }, para.substring(4)));
-            return;
-        }
-        
-        // Lists
-        if (para.match(/^[\*\-\+]\s/)) {
-            const items = para.split('\n').filter(line => line.match(/^[\*\-\+]\s/));
-            elements.push(React.createElement('ul', { key: idx, className: 'list-disc list-inside my-2 space-y-1' },
-                items.map((item, itemIdx) => 
-                    React.createElement('li', { key: itemIdx, className: 'ml-2' }, 
-                        renderInlineMarkdown(item.substring(2))
-                    )
-                )
-            ));
-            return;
-        }
-        
-        if (para.match(/^\d+\.\s/)) {
-            const items = para.split('\n').filter(line => line.match(/^\d+\.\s/));
-            elements.push(React.createElement('ol', { key: idx, className: 'list-decimal list-inside my-2 space-y-1' },
-                items.map((item, itemIdx) => 
-                    React.createElement('li', { key: itemIdx, className: 'ml-2' }, 
-                        renderInlineMarkdown(item.replace(/^\d+\.\s/, ''))
-                    )
-                )
-            ));
-            return;
-        }
-        
-        // Regular paragraph with inline formatting
-        const codeParts = [];
-        let codeIdx = 0;
-        let processedPara = para.replace(/`([^`]+)`/g, (match, code) => {
-            const id = `code-${idx}-${codeIdx++}`;
-            codeParts.push(React.createElement('code', { key: id, className: 'bg-slate-200 text-slate-800 px-1 py-0.5 rounded text-xs font-mono' }, code));
-            return `__CODE_${id}__`;
-        });
-        
-        // Bold and italic
-        processedPara = processedPara.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-        processedPara = processedPara.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        processedPara = processedPara.replace(/\*(.+?)\*/g, '<em>$1</em>');
-        
-        const parts = processedPara.split(/(__CODE_\w+__)/);
-        const paraElements = parts.map((part, partIdx) => {
-            if (part.startsWith('__CODE_')) {
-                const codeId = part.replace(/__CODE_|__/g, '');
-                return codeParts.find(c => c.key === codeId) || part;
-            }
-            return React.createElement('span', { key: partIdx, dangerouslySetInnerHTML: { __html: part } });
-        });
-        
-        elements.push(React.createElement('p', { key: idx, className: 'mb-2 last:mb-0' }, paraElements));
-    });
-    
-    return elements;
-};
-
-const renderInlineMarkdown = (text) => {
-    if (!text) return null;
-    
-    // Inline code
-    const parts = [];
-    let codeIdx = 0;
-    let processedText = text.replace(/`([^`]+)`/g, (match, code) => {
-        const id = `inline-code-${codeIdx++}`;
-        parts.push({ type: 'code', id, content: code });
-        return `__CODE_${id}__`;
-    });
-    
-    // Bold and italic
-    processedText = processedText.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-    processedText = processedText.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    processedText = processedText.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    
-    const elements = processedText.split(/(__CODE_\w+__)/).map((part, idx) => {
-        if (part.startsWith('__CODE_')) {
-            const codeId = part.replace(/__CODE_|__/g, '');
-            const codePart = parts.find(p => p.id === codeId);
-            if (codePart) {
-                return React.createElement('code', { 
-                    key: codeId, 
-                    className: 'bg-slate-200 text-slate-800 px-1 py-0.5 rounded text-xs font-mono' 
-                }, codePart.content);
-            }
-        }
-        return React.createElement('span', { key: idx, dangerouslySetInnerHTML: { __html: part } });
-    });
-    
-    return elements;
+// Custom components for react-markdown styling
+const markdownComponents = {
+    h1: ({ children }) => <h1 className="text-xl font-bold mb-2 mt-4 first:mt-0">{children}</h1>,
+    h2: ({ children }) => <h2 className="text-lg font-semibold mb-2 mt-3 first:mt-0">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-base font-semibold mb-1 mt-2 first:mt-0">{children}</h3>,
+    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+    ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1">{children}</ul>,
+    ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1">{children}</ol>,
+    li: ({ children }) => <li className="ml-2">{children}</li>,
+    code: ({ inline, children }) => 
+        inline ? (
+            <code className="bg-slate-200 text-slate-800 px-1 py-0.5 rounded text-xs font-mono">{children}</code>
+        ) : (
+            <code>{children}</code>
+        ),
+    pre: ({ children }) => (
+        <pre className="bg-slate-800 text-slate-100 p-3 rounded text-xs overflow-x-auto my-2">{children}</pre>
+    ),
+    strong: ({ children }) => <strong>{children}</strong>,
+    em: ({ children }) => <em>{children}</em>,
 };
 
 // Calculate Bezier curve path
@@ -307,21 +191,33 @@ const AgentSelector = ({ value, onChange, onClose, agentTree }) => {
 
 /**
  * COMPONENT: Speech Bubble
- * Displays markdown content in a speech bubble positioned near the active node
+ * Displays markdown content in a speech bubble positioned near a specified node
+ * currentMessage: { node: string, message: string } | string | null
+ *   - If object: { node: agentPath, message: markdown content }
+ *   - If string (legacy): uses activeNode as the target node
  */
 const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, containerRef }) => {
     const [animationState, setAnimationState] = useState('hidden'); // 'hidden', 'appearing', 'visible', 'disappearing'
     const [displayMessage, setDisplayMessage] = useState(null);
-    const prevMessageRef = useRef(null);
+    const prevMessageTextRef = useRef(null);
     const bubbleRef = useRef(null);
     
-    // Find the active node
-    const activeNodeData = nodes.find(node => activeNode === node.data.agentPath.join('/'));
+    // Normalize currentMessage: support both string (legacy) and object formats
+    const normalizedMessage = typeof currentMessage === 'string' 
+        ? { node: activeNode, message: currentMessage }
+        : currentMessage;
+    
+    // Extract node and message from normalized message object
+    const messageNode = normalizedMessage?.node;
+    const messageText = normalizedMessage?.message;
+    
+    // Find the node to display the message on
+    const targetNodeData = nodes.find(node => messageNode === node.data.agentPath.join('/'));
     
     useEffect(() => {
-        const prevMessage = prevMessageRef.current;
-        const hasMessage = !!currentMessage;
-        const hadMessage = !!prevMessage;
+        const prevMessageText = prevMessageTextRef.current;
+        const hasMessage = !!messageText;
+        const hadMessage = !!prevMessageText;
         
         if (!hasMessage && !hadMessage) {
             // No message before or after
@@ -343,45 +239,45 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
             }, 300); // Match animation duration
         } else if (hasMessage && !hadMessage) {
             // Message appeared - animate in
-            setDisplayMessage(currentMessage);
+            setDisplayMessage(normalizedMessage);
             setAnimationState('appearing');
             // After animation completes, set to visible
             setTimeout(() => {
                 setAnimationState('visible');
             }, 400); // Match animation duration
-        } else if (hasMessage && hadMessage && prevMessage !== currentMessage) {
+        } else if (hasMessage && hadMessage && prevMessageText !== messageText) {
             // Message replaced - no animation, just update
-            setDisplayMessage(currentMessage);
+            setDisplayMessage(normalizedMessage);
             setAnimationState('visible');
-        } else if (hasMessage && hadMessage && prevMessage === currentMessage) {
+        } else if (hasMessage && hadMessage && prevMessageText === messageText) {
             // Same message - keep visible
-            setDisplayMessage(currentMessage);
+            setDisplayMessage(normalizedMessage);
             if (animationState === 'hidden') {
                 setAnimationState('visible');
             }
         }
         
-        prevMessageRef.current = currentMessage;
-    }, [currentMessage, activeNode]);
+        prevMessageTextRef.current = messageText;
+    }, [normalizedMessage, messageNode, messageText]);
     
-    if (!activeNode || !displayMessage || animationState === 'hidden') return null;
-    if (!activeNodeData) return null;
+    if (!messageNode || !displayMessage?.message || animationState === 'hidden') return null;
+    if (!targetNodeData) return null;
     
-    const nodeHeight = nodeHeights[activeNodeData.id] || 88;
+    const nodeHeight = nodeHeights[targetNodeData.id] || 88;
     const bubbleWidth = 640; // Doubled from 320
     const bubbleHeight = 280;
     const nodeWidth = 256; // Node width is 256px
     
-    // Position bubble below the active node, aligned with left edge
-    const bubbleX = activeNodeData.x; // Align left edges
-    const bubbleY = activeNodeData.y + nodeHeight + 20; // Below node with gap
+    // Position bubble below the target node, aligned with left edge
+    const bubbleX = targetNodeData.x; // Align left edges
+    const bubbleY = targetNodeData.y + nodeHeight + 20; // Below node with gap
     
     // Triangle position: middle of node (128px from node's left edge, which is bubble's left edge)
     const triangleLeft = nodeWidth / 2; // 128px - middle of node
     
     // Calculate scale origin from node center (for shrink animation)
-    const nodeCenterX = activeNodeData.x + nodeWidth / 2;
-    const nodeCenterY = activeNodeData.y + nodeHeight / 2;
+    const nodeCenterX = targetNodeData.x + nodeWidth / 2;
+    const nodeCenterY = targetNodeData.y + nodeHeight / 2;
     // Transform origin relative to the bubble element (0-100%)
     const originX = ((nodeCenterX - bubbleX) / bubbleWidth) * 100;
     const originY = ((nodeCenterY - bubbleY) / bubbleHeight) * 100;
@@ -456,7 +352,7 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
                         height: 0,
                         borderLeft: '12px solid transparent',
                         borderRight: '12px solid transparent',
-                        borderBottom: '12px solid rgba(255, 255, 255, 0.95)',
+                        borderBottom: `12px solid ${!activeNode ? '#ffffff' : 'rgba(255, 255, 255, 0.95)'}`,
                         filter: 'drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1))',
                     }}
                 />
@@ -465,10 +361,10 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
                 <div
                     className="bg-white rounded-2xl shadow-xl border-slate-300 overflow-hidden"
                     style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        backgroundColor: !activeNode ? '#ffffff' : 'rgba(255, 255, 255, 0.95)',
                         borderWidth: '3px',
-                        maskImage: 'linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3))',
-                        WebkitMaskImage: 'linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3))',
+                        maskImage: !activeNode ? 'none' : 'linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3))',
+                        WebkitMaskImage: !activeNode ? 'none' : 'linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.3))',
                     }}
                 >
                     <div
@@ -477,7 +373,7 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
                             maxHeight: `${bubbleHeight}px`,
                         }}
                     >
-                        {renderMarkdown(displayMessage)}
+                        <ReactMarkdown components={markdownComponents}>{displayMessage.message}</ReactMarkdown>
                     </div>
                 </div>
             </div>
@@ -498,7 +394,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
     const handleSendPrompt = () => {
         if (!promptInput.trim()) return;
         if (handlePrompt) {
-            handlePrompt(promptInput);
+            handlePrompt({ prompt: promptInput });
         }
         setPromptInput('');
     };
@@ -823,7 +719,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-slate-100 text-slate-900 font-sans overflow-hidden">
+        <div className="flex flex-col h-full min-h-[500px] w-full bg-slate-100 text-slate-900 font-sans overflow-hidden relative">
 
             {/* Toolbar */}
             <div
@@ -892,7 +788,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
             {/* Canvas Area */}
             <div
                 ref={containerRef}
-                className="flex-1 relative overflow-hidden bg-grid-slate-200/[0.5]"
+                className="flex-1 relative overflow-hidden bg-grid-slate-200"
                 style={{ cursor: isPanning ? 'grabbing' : 'grab', backgroundSize: '40px 40px' }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
@@ -1163,39 +1059,47 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                             );
                         })}
                     </div>
-                </div>
-
-                {/* Prompt Box */}
-                {!isEditing && handlePrompt && !activeNode && (
-                    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-2xl px-4 z-30 pointer-events-auto">
-                        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-2 flex items-end gap-2">
-                            <textarea
-                                value={promptInput}
-                                onChange={(e) => setPromptInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        handleSendPrompt();
-                                    }
-                                }}
-                                placeholder="Message Team Builder..."
-                                className="w-full max-h-32 min-h-[44px] py-3 px-4 bg-transparent border-0 focus:ring-0 resize-none text-slate-800 placeholder:text-slate-400 text-sm focus:outline-none"
-                                rows={1}
-                            />
-                            <button
-                                onClick={handleSendPrompt}
-                                disabled={!promptInput.trim()}
-                                className={`p-2 rounded-xl mb-1 transition-colors ${
-                                    promptInput.trim() 
-                                        ? 'bg-slate-900 text-white hover:bg-slate-700' 
-                                        : 'bg-slate-100 text-slate-300'
-                                }`}
-                            >
-                                <Send size={18} />
-                            </button>
+                
+                    {/* Prompt Box */}
+                    {!isEditing && handlePrompt && !activeNode && (
+                        <div 
+                            className="absolute w-full max-w-2xl px-4 z-30 pointer-events-auto"
+                            style={{ 
+                                bottom: '24px', 
+                                left: '50%', 
+                                transform: 'translateX(-50%)' 
+                            }}
+                        >
+                            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-2 flex items-end gap-2">
+                                <textarea
+                                    value={promptInput}
+                                    onChange={(e) => setPromptInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSendPrompt();
+                                        }
+                                    }}
+                                    placeholder="Message Team Builder..."
+                                    className="w-full max-h-32 min-h-[44px] py-3 px-4 bg-transparent border-0 focus:ring-0 resize-none text-slate-800 placeholder:text-slate-400 text-sm focus:outline-none"
+                                    rows={1}
+                                />
+                                <button
+                                    onClick={handleSendPrompt}
+                                    disabled={!promptInput.trim()}
+                                    className={`p-2 rounded-xl mb-1 transition-colors ${
+                                        promptInput.trim() 
+                                            ? 'bg-slate-900 text-white hover:bg-slate-700' 
+                                            : 'bg-slate-100 text-slate-300'
+                                    }`}
+                                    style={promptInput.trim() ? { color: 'white' } : {}}
+                                >
+                                    <Send size={18} />
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
 
             {/* Footer Info */}

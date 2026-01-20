@@ -105,7 +105,7 @@ This generates:
 ## Usage Example
 
 ```javascript
-import components from "./dist/custom-components-main.js";
+import components from "./dist/orcal-ui.js";
 
 const { TeamBuilder } = components.v1;
 
@@ -198,7 +198,7 @@ Modern browsers with ES6+ support:
 Components are exported under versioned namespaces:
 
 ```javascript
-import components from "./dist/custom-components-main.js";
+import components from "./dist/orcal-ui.js";
 const { TeamBuilder } = components.v1;
 ```
 

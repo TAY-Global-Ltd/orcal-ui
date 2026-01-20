@@ -37,11 +37,11 @@ const externals = { "react": "React", "react-dom": "ReactDOM" };
 const isProd = process.env.NODE_ENV === "production";
 
 export default {
-    input: { ["custom-components-main"]: "src/index.js" },
+    input: { ["orcal-ui"]: "src/index.js" },
     output: {
         dir: "dist",
-        entryFileNames: isProd ? "custom-components-main-[hash].js" : "custom-components-main.js",
-        chunkFileNames: "custom-components-chunk-[hash].js",
+        entryFileNames: isProd ? "orcal-ui-[hash].js" : "orcal-ui.js",
+        chunkFileNames: "orcal-chunk-[hash].js",
         format: "esm",
     },
     plugins: [

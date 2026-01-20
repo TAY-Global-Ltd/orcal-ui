@@ -50,7 +50,7 @@
     <div id="root"></div>
 
     <script type="module">
-        import components from "./dist/custom-components-main.js";
+        import components from "./dist/orcal-ui.js";
 
         const { TeamBuilder } = components.v1;
 
@@ -360,7 +360,7 @@ Combining all branch outputs into cohesive social content:
                 setCurrentMessage(null);
             };
 
-            const handlePrompt = (prompt) => {
+            const handlePrompt = ({ prompt }) => {
                 console.log("User Prompt:", prompt);
                 startSimulation();
             };
