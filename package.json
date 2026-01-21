@@ -2,7 +2,11 @@
   "name": "orcal-ui",
   "description": "Corca UI Components",
   "version": "0.1.1",
-  "private": true,
+  "main": "dist/orcal-ui.js",
+  "module": "dist/orcal-ui.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "cross-env NODE_ENV=development rollup -cw",
     "build": "cross-env NODE_ENV=production rollup -c",

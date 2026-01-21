@@ -40,7 +40,7 @@ export default {
     input: { ["orcal-ui"]: "src/index.js" },
     output: {
         dir: "dist",
-        entryFileNames: isProd ? "orcal-ui-[hash].js" : "orcal-ui.js",
+        entryFileNames: "orcal-ui.js",
         chunkFileNames: "orcal-chunk-[hash].js",
         format: "esm",
     },

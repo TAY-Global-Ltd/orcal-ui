@@ -122,10 +122,10 @@ const AgentSelector = ({ value, onChange, onClose, agentTree }) => {
 
     const isLeaf = Array.isArray(currentOptions);
 
-    const handleSelect = (key) => {
+    const handleSelect = ({ key }) => {
         if (isLeaf) {
             // It's an agent selection
-            onChange([...path, key]);
+            onChange({ path: [...path, key] });
             onClose();
         } else {
             // Go deeper
@@ -158,7 +158,7 @@ const AgentSelector = ({ value, onChange, onClose, agentTree }) => {
                     currentOptions.map((agent) => (
                         <button
                             key={agent}
-                            onClick={() => handleSelect(agent)}
+                            onClick={() => handleSelect({ key: agent })}
                             className="w-full text-left px-[12px] py-[8px] text-[14px] text-slate-700 hover:bg-blue-50 rounded flex items-center gap-[8px]"
                         >
                             <div className="w-[8px] h-[8px] rounded-full bg-green-500"></div>
@@ -169,7 +169,7 @@ const AgentSelector = ({ value, onChange, onClose, agentTree }) => {
                     Object.keys(currentOptions).map((key) => (
                         <button
                             key={key}
-                            onClick={() => handleSelect(key)}
+                            onClick={() => handleSelect({ key })}
                             className="w-full text-left px-[12px] py-[8px] text-[14px] text-slate-700 hover:bg-slate-100 rounded flex items-center justify-between group"
                         >
                             <div className="flex items-center gap-[8px]">
@@ -332,7 +332,7 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
             `}</style>
             <div
                 ref={bubbleRef}
-                className="absolute pointer-events-auto z-20"
+                className="absolute pointer-events-none z-20"
                 style={{
                     ...(animationState === 'visible' && !animationStyle.animation ? { transform: baseTransform } : {}),
                     transformOrigin: `${originX}% ${originY}%`,
@@ -343,7 +343,7 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
             >
                 {/* Speech bubble tail pointing upward */}
                 <div
-                    className="absolute z-10"
+                    className="absolute z-10 pointer-events-auto"
                     style={{
                         left: `${triangleLeft}px`,
                         transform: 'translateX(-50%)',
@@ -359,7 +359,7 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
                 
                 {/* Speech bubble content */}
                 <div
-                    className="bg-white rounded-2xl shadow-xl border-slate-300 overflow-hidden"
+                    className="bg-white rounded-2xl shadow-xl border-slate-300 overflow-hidden pointer-events-auto"
                     style={{
                         backgroundColor: !activeNode ? '#ffffff' : 'rgba(255, 255, 255, 0.95)',
                         borderWidth: '3px',
@@ -437,6 +437,8 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
     const animationFrameRef = useRef(null);
     const panRef = useRef(pan);
     const isAutoPanningRef = useRef(false);
+    // Track if we've done the initial pan to the active node
+    const initialPanDoneRef = useRef(false);
 
     // Keep panRef in sync with pan state
     useEffect(() => {
@@ -516,6 +518,26 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
             panToActiveNode();
         }
     }, [activeNode, isFollowingActive, panToActiveNode]);
+
+    // Handle initial pan when nodeHeights become available
+    // This ensures we pan to the active node after the component has measured node heights
+    useEffect(() => {
+        // Check if we have node heights measured (object has keys)
+        const hasNodeHeights = Object.keys(nodeHeights).length > 0;
+        
+        if (isFollowingActive && activeNode && hasNodeHeights && !initialPanDoneRef.current) {
+            // Mark that we've done the initial pan
+            initialPanDoneRef.current = true;
+            panToActiveNode();
+        }
+    }, [nodeHeights, isFollowingActive, activeNode, panToActiveNode]);
+
+    // Reset the initial pan flag when activeNode changes to a different value
+    // This allows re-panning when activeNode changes
+    useEffect(() => {
+        // We don't reset on every activeNode change - the main follow effect handles that
+        // This is just for tracking the initial mount scenario
+    }, [activeNode]);
 
     // Disable follow mode when entering edit mode
     useEffect(() => {
@@ -643,7 +665,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
         setIsPanning(false);
     };
 
-    const onNodeDragStart = (e, node) => {
+    const onNodeDragStart = ({ event: e, node }) => {
         if (!isEditing) return;
         e.stopPropagation();
         // Only drag if not clicking a control
@@ -656,7 +678,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
         });
     };
 
-    const onHandleMouseDown = (e, nodeId, type) => {
+    const onHandleMouseDown = ({ event: e, nodeId, type }) => {
         if (!isEditing) return;
         e.stopPropagation();
         if (type === 'source') {
@@ -670,7 +692,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
         }
     };
 
-    const onHandleMouseUp = (e, nodeId, type) => {
+    const onHandleMouseUp = ({ event: e, nodeId, type }) => {
         e.stopPropagation();
         if (connectingSource && type === 'target' && connectingSource.nodeId !== nodeId) {
             // Create Edge
@@ -689,19 +711,19 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
         setConnectingSource(null);
     };
 
-    const deleteNode = (id) => {
+    const deleteNode = ({ id }) => {
         setNodes(nodes.filter(n => n.id !== id));
         setEdges(edges.filter(e => e.source !== id && e.target !== id));
         delete nodeRefs.current[id];
     };
 
-    const deleteEdge = (id) => {
+    const deleteEdge = ({ id }) => {
         if (!isEditing) return;
         setEdges(edges.filter(e => e.id !== id));
     };
 
-    const updateAgent = (nodeId, newPath) => {
-        setNodes(nodes.map(n => n.id === nodeId ? { ...n, data: { ...n.data, agentPath: newPath } } : n));
+    const updateAgent = ({ nodeId, path }) => {
+        setNodes(nodes.map(n => n.id === nodeId ? { ...n, data: { ...n.data, agentPath: path } } : n));
     };
 
     const addNode = () => {
@@ -842,7 +864,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                         stroke="transparent"
                                         fill="none"
                                         className={isEditing ? "cursor-pointer" : ""}
-                                        onClick={() => deleteEdge(edge.id)} // Click fat hidden path to delete
+                                        onClick={() => deleteEdge({ id: edge.id })} // Click fat hidden path to delete
                                     />
                                     <path
                                         d={path}
@@ -898,7 +920,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                     ref={el => nodeRefs.current[node.id] = el}
                                     data-node="true"
                                     key={node.id}
-                                    onMouseDown={(e) => onNodeDragStart(e, node)}
+                                    onMouseDown={(e) => onNodeDragStart({ event: e, node })}
                                     style={{
                                         transform: `translate(${node.x}px, ${node.y}px)`,
                                         width: '256px',
@@ -936,7 +958,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                                 {!isEditing ? (
                                                     handleView && node.data.agentPath.length > 0 && (
                                                         <button
-                                                            onClick={() => handleView(node.data.agentPath.join('/'))}
+                                                            onClick={() => handleView({ agentPath: node.data.agentPath.join('/') })}
                                                             className="p-[6px] rounded-[6px] text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                                                             title="View Agent"
                                                         >
@@ -946,7 +968,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                                 ) : (
                                                     handleEdit && node.data.agentPath.length > 0 && (
                                                         <button
-                                                            onClick={() => handleEdit(node.data.agentPath.join('/'))}
+                                                            onClick={() => handleEdit({ agentPath: node.data.agentPath.join('/') })}
                                                             className="p-[6px] rounded-[6px] text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
                                                             title="Edit Agent"
                                                         >
@@ -974,7 +996,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                                 )}
                                                 {isEditing && (
                                                     <button
-                                                        onClick={() => deleteNode(node.id)}
+                                                        onClick={() => deleteNode({ id: node.id })}
                                                         className="p-[6px] rounded-[6px] text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors"
                                                     >
                                                         <Trash2 size={16} />
@@ -996,7 +1018,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                             {openSelectorId === node.id && isEditing && (
                                                 <AgentSelector
                                                     value={node.data.agentPath}
-                                                    onChange={(newPath) => updateAgent(node.id, newPath)}
+                                                    onChange={({ path }) => updateAgent({ nodeId: node.id, path })}
                                                     onClose={() => setOpenSelectorId(null)}
                                                     agentTree={agentTree}
                                                 />
@@ -1025,7 +1047,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                         >
                                             <div
                                                 className="w-[12px] h-[12px] bg-white border-2 border-slate-400 rounded-full hover:border-indigo-500 hover:bg-indigo-50 cursor-crosshair pointer-events-auto"
-                                                onMouseUp={(e) => onHandleMouseUp(e, node.id, 'target')}
+                                                onMouseUp={(e) => onHandleMouseUp({ event: e, nodeId: node.id, type: 'target' })}
                                             />
                                         </div>
                                     )}
@@ -1050,7 +1072,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                         >
                                             <div
                                                 className="w-[12px] h-[12px] bg-white border-2 border-slate-400 rounded-full hover:border-indigo-500 hover:bg-indigo-50 cursor-crosshair pointer-events-auto"
-                                                onMouseDown={(e) => onHandleMouseDown(e, node.id, 'source')}
+                                                onMouseDown={(e) => onHandleMouseDown({ event: e, nodeId: node.id, type: 'source' })}
                                             />
                                         </div>
                                     )}
@@ -1063,14 +1085,14 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                     {/* Prompt Box */}
                     {!isEditing && handlePrompt && !activeNode && (
                         <div 
-                            className="absolute w-full max-w-2xl px-4 z-30 pointer-events-auto"
+                            className="absolute w-full max-w-2xl px-4 z-30 pointer-events-none"
                             style={{ 
                                 bottom: '24px', 
                                 left: '50%', 
                                 transform: 'translateX(-50%)' 
                             }}
                         >
-                            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-2 flex items-end gap-2">
+                            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-2 flex items-end gap-2 pointer-events-auto">
                                 <textarea
                                     value={promptInput}
                                     onChange={(e) => setPromptInput(e.target.value)}
@@ -1172,3 +1194,4 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
 }
 
 export default ({ withBindings }) => withBindings(TeamBuilder);
+
