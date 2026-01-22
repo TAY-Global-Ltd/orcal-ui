@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import "../tailwind.css";
-import { Settings, X, Plus, Play, Trash2, ChevronRight, ChevronDown, Check, Users, Save, Pencil, Home, AlertTriangle, Eye, Edit, Send } from 'lucide-react';
+import { Settings, X, Plus, Play, Trash2, ChevronRight, ChevronDown, Check, Users, Save, Pencil, Home, AlertTriangle, Eye, Edit, Send, RotateCcw } from 'lucide-react';
 
 /**
  * MOCK DATA
@@ -403,6 +403,16 @@ function TeamBuilder({
 
     // Prompt State
     const [promptInput, setPromptInput] = useState('');
+    const [dismissedMessage, setDismissedMessage] = useState(null);
+
+    // Reset dismissed message when content changes
+    useEffect(() => {
+        setDismissedMessage(null);
+    }, [currentMessage]);
+
+    const getMessageText = (msg) => typeof msg === 'string' ? msg : msg?.message;
+    const currentMessageText = getMessageText(currentMessage);
+    const effectiveMessage = currentMessageText === dismissedMessage ? null : currentMessage;
 
     const handleSendPrompt = () => {
         if (!promptInput.trim()) return;
@@ -781,9 +791,18 @@ function TeamBuilder({
                                 Follow Active Agent
                             </button>
                         ) : (
-                            <div className="text-[12px] text-slate-500 hidden md:block">
-                                View Only Mode
-                            </div>
+                            effectiveMessage ? (
+                                <button
+                                    onClick={() => setDismissedMessage(currentMessageText)}
+                                    className="flex items-center gap-[8px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-[16px] py-[8px] rounded-[6px] text-[14px] font-medium transition-colors shadow-sm"
+                                >
+                                    <RotateCcw size={16} /> Restart
+                                </button>
+                            ) : (
+                                <div className="text-[12px] text-slate-500 hidden md:block">
+                                    View Only Mode
+                                </div>
+                            )
                         )
                     )}
 
@@ -908,7 +927,7 @@ function TeamBuilder({
                         activeNode={activeNode}
                         nodes={nodes}
                         nodeHeights={nodeHeights}
-                        currentMessage={currentMessage}
+                        currentMessage={effectiveMessage}
                         pan={pan}
                         containerRef={containerRef}
                     />
