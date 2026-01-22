@@ -930,7 +930,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                         lineHeight: '1.5',
                                         fontFamily: 'sans-serif'
                                     }}
-                                    className={`absolute bg-white rounded-[12px] shadow-lg border-2 transition-shadow duration-200 group flex flex-col z-10
+                                    className={`absolute bg-white rounded-[12px] shadow-lg border-2 transition-shadow duration-200 group flex flex-col ${openSelectorId === node.id ? 'z-50' : 'z-10'}
                                         ${isActive
                                             ? 'border-green-500 shadow-green-500/30 ring-1 ring-green-500'
                                             : 'border-blue-500 hover:border-blue-600'
