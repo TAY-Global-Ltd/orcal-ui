@@ -384,7 +384,20 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
 /**
  * MAIN APP COMPONENT
  */
-function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], initialEdges = [], handleSave, handleView, handleEdit, initialEditable = false, currentMessage, handlePrompt, isFollowingActive: shouldFollow }) {
+function TeamBuilder({ 
+    agentTree = AGENT_TREE, 
+    activeNode, 
+    initialNodes = [], 
+    initialEdges = [], 
+    handleSave, 
+    handleView, 
+    handleEdit, 
+    initialEditable = false, 
+    currentMessage, 
+    handlePrompt, 
+    isFollowingActive: shouldFollow,
+    showPrompt = !activeNode
+}) {
     const [nodes, setNodes] = useState(initialNodes);
     const [edges, setEdges] = useState(initialEdges);
 
@@ -1083,7 +1096,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                     </div>
                 
                     {/* Prompt Box */}
-                    {!isEditing && handlePrompt && !activeNode && (
+                    {!isEditing && handlePrompt && showPrompt && (
                         <div 
                             className="absolute w-full max-w-2xl px-4 z-30 pointer-events-none"
                             style={{ 
