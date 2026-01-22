@@ -1096,7 +1096,7 @@ function TeamBuilder({
                     </div>
                 
                     {/* Prompt Box */}
-                    {!isEditing && handlePrompt && showPrompt && (
+                    {!isEditing && handlePrompt && showPrompt && !activeNode && (
                         <div 
                             className="absolute w-full max-w-2xl px-4 z-30 pointer-events-none"
                             style={{ 
