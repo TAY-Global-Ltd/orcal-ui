@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import "../tailwind.css";
-import { Settings, X, Plus, Play, Trash2, ChevronRight, ChevronDown, Check, Users, Save, Pencil, Home, AlertTriangle, Eye, Edit, Send } from 'lucide-react';
+import { Settings, X, Plus, Play, Trash2, ChevronRight, ChevronDown, Check, Users, Save, Pencil, Home, AlertTriangle, Eye, Edit, Send, RotateCcw } from 'lucide-react';
 
 /**
  * MOCK DATA
@@ -384,12 +384,35 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
 /**
  * MAIN APP COMPONENT
  */
-function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], initialEdges = [], handleSave, handleView, handleEdit, initialEditable = false, currentMessage, handlePrompt, isFollowingActive: shouldFollow }) {
+function TeamBuilder({ 
+    agentTree = AGENT_TREE, 
+    activeNode, 
+    initialNodes = [], 
+    initialEdges = [], 
+    handleSave, 
+    handleView, 
+    handleEdit, 
+    initialEditable = false, 
+    currentMessage, 
+    handlePrompt, 
+    isFollowingActive: shouldFollow,
+    showPrompt = !activeNode
+}) {
     const [nodes, setNodes] = useState(initialNodes);
     const [edges, setEdges] = useState(initialEdges);
 
     // Prompt State
     const [promptInput, setPromptInput] = useState('');
+    const [dismissedMessage, setDismissedMessage] = useState(null);
+
+    // Reset dismissed message when content changes
+    useEffect(() => {
+        setDismissedMessage(null);
+    }, [currentMessage]);
+
+    const getMessageText = (msg) => typeof msg === 'string' ? msg : msg?.message;
+    const currentMessageText = getMessageText(currentMessage);
+    const effectiveMessage = currentMessageText === dismissedMessage ? null : currentMessage;
 
     const handleSendPrompt = () => {
         if (!promptInput.trim()) return;
@@ -768,9 +791,18 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                                 Follow Active Agent
                             </button>
                         ) : (
-                            <div className="text-[12px] text-slate-500 hidden md:block">
-                                View Only Mode
-                            </div>
+                            effectiveMessage ? (
+                                <button
+                                    onClick={() => setDismissedMessage(currentMessageText)}
+                                    className="flex items-center gap-[8px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-[16px] py-[8px] rounded-[6px] text-[14px] font-medium transition-colors shadow-sm"
+                                >
+                                    <RotateCcw size={16} /> Restart
+                                </button>
+                            ) : (
+                                <div className="text-[12px] text-slate-500 hidden md:block">
+                                    View Only Mode
+                                </div>
+                            )
                         )
                     )}
 
@@ -895,7 +927,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                         activeNode={activeNode}
                         nodes={nodes}
                         nodeHeights={nodeHeights}
-                        currentMessage={currentMessage}
+                        currentMessage={effectiveMessage}
                         pan={pan}
                         containerRef={containerRef}
                     />
@@ -1083,7 +1115,7 @@ function TeamBuilder({ agentTree = AGENT_TREE, activeNode, initialNodes = [], in
                     </div>
                 
                     {/* Prompt Box */}
-                    {!isEditing && handlePrompt && !activeNode && (
+                    {!isEditing && handlePrompt && showPrompt && !activeNode && (
                         <div 
                             className="absolute w-full max-w-2xl px-4 z-30 pointer-events-none"
                             style={{ 
