@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import ReactMarkdown from 'react-markdown';
 import "../tailwind.css";
 import {
     Network,
@@ -181,9 +182,9 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                             </h2>
 
                             <div className="prose prose-zinc max-w-none">
-                                <p className="text-zinc-600 leading-relaxed text-lg mb-8">
+                                <ReactMarkdown className="text-zinc-600 leading-relaxed text-lg mb-8">
                                     {selectedNode.content}
-                                </p>
+                                </ReactMarkdown>
                             </div>
 
                             {selectedNode.children && (
