@@ -1,4 +1,5 @@
 import TeamBuilder from "./components/TeamBuilder";
+import KnowledgeGraph from "./components/KnowledgeGraph";
 
 /**
  * See the docs for more info on API versions:
@@ -46,9 +47,32 @@ import TeamBuilder from "./components/TeamBuilder";
  *   currentMessage="**Generating blog post...**\n\n- Analyzing keywords"
  * />
  * ```
+ * 
+ * KnowledgeGraph Props:
+ * - data: Object - Root node of the knowledge tree
+ *   - id: string - Unique identifier
+ *   - label: string - Display name
+ *   - category: string - One of: 'root', 'history', 'tech', 'training', 'feature', 'safety'
+ *   - content: string - Markdown content for the sidebar
+ *   - children: Array<Node> - Child nodes
+ * - title: string (optional) - Title displayed in the sidebar header. Defaults to "Wikipedia LLM Explorer".
+ * 
+ * Example Usage:
+ * ```jsx
+ * <KnowledgeGraph
+ *   data={{
+ *     id: 'root',
+ *     label: 'Main Topic',
+ *     category: 'root',
+ *     content: 'This is the main topic content...',
+ *     children: []
+ *   }}
+ * />
+ * ```
  */
 export default {
     v1: {
         TeamBuilder,
+        KnowledgeGraph,
     },
 };
