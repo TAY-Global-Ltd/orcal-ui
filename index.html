@@ -52,7 +52,7 @@
     <script type="module">
         import components from "./dist/orcal-ui.js";
 
-        const { TeamBuilder } = components.v1;
+        const { TeamBuilder, KnowledgeGraph } = components.v1;
 
         // Mock withBindings for local testing
         const withBindings = (Component) => (props) => {
@@ -80,21 +80,129 @@
         //    Optimize(3) Summarize(6)
         //        \       /
         //       Social(7)
+        const KNOWLEDGE_TREE = {
+            id: 'llm-root',
+            label: 'Large Language Model',
+            category: 'root',
+            content: `A **Large Language Model (LLM)** is a language model trained with self-supervised machine learning on a vast amount of text. They consist of *billions to trillions* of parameters and operate as general-purpose sequence models, generating, summarizing, translating, and reasoning over text. 
+            
+            LLMs represent a significant new technology in their ability to generalize across tasks with minimal task-specific supervision, enabling capabilities like:
+            - Conversational agents
+            - Code generation
+            - **Automated reasoning**`,
+            children: [
+                {
+                    id: 'history',
+                    label: 'History & Evolution',
+                    category: 'history',
+                    content: `The history of LLMs is marked by a shift from statistical methods to deep learning. Early breakthroughs included IBM's statistical models in the 90s and the rise of "web as corpus" in the 2000s. 
+            
+            The modern era began with Word2Vec (2013) and reached a tipping point with the Transformer architecture in 2017. Since then, the field has been dominated by decoder-only models like GPT and open-weight models like LLaMA.`,
+                    children: [
+                        {
+                            id: 'transformer-2017',
+                            label: 'Transformer (2017)',
+                            category: 'history',
+                            content: 'Introduced in the paper "Attention Is All You Need", the transformer architecture replaced recurrence (LSTMs) with self-attention. This allowed for massive parallelization and the ability to handle much longer contexts, which directly enabled the scaling of models like BERT and GPT.'
+                        },
+                        {
+                            id: 'gpt-era',
+                            label: 'GPT Era',
+                            category: 'history',
+                            content: 'OpenAI\'s Generative Pre-trained Transformer series demonstrated that increasing model size and data volume leads to "emergent abilities." GPT-3 (2020) showed impressive few-shot learning, while GPT-4 (2023) added multimodal capabilities and enhanced reasoning.'
+                        }
+                    ]
+                },
+                {
+                    id: 'architecture',
+                    label: 'Architecture',
+                    category: 'tech',
+                    content: `Modern LLMs are predominantly based on the Transformer architecture. The core innovation is the attention mechanism, which allows the model to process all tokens in a sequence simultaneously rather than sequentially. 
+            
+            Key technical concepts include Mixture of Experts (MoE) for efficiency, various tokenization strategies like Byte-Pair Encoding (BPE), and the expansion of context windows to handle entire books in a single prompt.`,
+                    children: [
+                        {
+                            id: 'attention',
+                            label: 'Self-Attention',
+                            category: 'tech',
+                            content: 'The attention mechanism assigns different weights to different parts of the input data based on their relevance to the current token being processed. This allows the model to "attend" to distant but related words, capturing complex linguistic dependencies.'
+                        },
+                        {
+                            id: 'moe',
+                            label: 'Mixture of Experts',
+                            category: 'tech',
+                            content: 'MoE is a technique where only a small fraction of the model\'s parameters are active for any given input. This allows for training models with trillions of parameters while keeping the inference cost manageable. Notable examples include GPT-4 and Mixtral 8x7B.'
+                        },
+                        {
+                            id: 'tokenization',
+                            label: 'Tokenization',
+                            category: 'tech',
+                            content: 'Text must be converted into numbers to be processed. Algorithms like Byte-Pair Encoding (BPE) split text into sub-word units (tokens). This balances vocabulary size with the ability to represent rare words efficiently.'
+                        }
+                    ]
+                },
+                {
+                    id: 'training',
+                    label: 'Training Process',
+                    category: 'training',
+                    content: `Training an LLM is a multi-stage process involving massive computational resources. It typically starts with self-supervised pre-training on a massive corpus (like Common Crawl), followed by alignment stages.
+            
+            The cost of training frontier models now reaches hundreds of millions of dollars in compute, requiring clusters of thousands of GPUs.`,
+                    children: [
+                        {
+                            id: 'rlhf',
+                            label: 'RLHF',
+                            category: 'training',
+                            content: 'Reinforcement Learning from Human Feedback is the process of fine-tuning a model using human rankings of its outputs. This aligns the model with human values, reduces harmful outputs, and makes the model more helpful for conversation.'
+                        },
+                        {
+                            id: 'synthetic-data',
+                            label: 'Synthetic Data',
+                            category: 'training',
+                            content: 'As high-quality human text is exhausted, researchers are increasingly using "synthetic data"—text generated by existing LLMs—to train new models. This requires careful filtering to avoid "model collapse."'
+                        }
+                    ]
+                },
+                {
+                    id: 'safety',
+                    label: 'Safety & Challenges',
+                    category: 'safety',
+                    content: `LLMs face significant technical and ethical challenges. These include the tendency to generate false information (hallucinations), social biases inherited from training data, and security vulnerabilities like prompt injection.
+            
+            Ensuring "alignment"—making sure the model does what the user intends without harmful side effects—is a primary area of AI safety research.`,
+                    children: [
+                        {
+                            id: 'hallucinations',
+                            label: 'Hallucinations',
+                            category: 'safety',
+                            content: 'Hallucination occurs when an LLM generates text that is grammatically correct but factually incorrect. This happens because the model is predicting the most likely next word rather than retrieving facts from a database.'
+                        },
+                        {
+                            id: 'prompt-injection',
+                            label: 'Prompt Injection',
+                            category: 'safety',
+                            content: 'A security vulnerability where a user crafts an input that trick the model into ignoring its safety instructions or acting as a "sleeper agent." Newer models use system/user prompt separation to mitigate this.'
+                        }
+                    ]
+                }
+            ]
+        };
+
         const demoNodes = [
             // Start: Research (far left)
             { id: '1', x: 50, y: 300, data: { label: 'Research', agentPath: ['Shared', 'Data Analysis', 'Market Trends'] } },
-            
+
             // Branch 1: Content creation path (top branch)
             { id: '2', x: 449, y: 73, data: { label: 'Write', agentPath: ['Shared', 'Content Creation', 'Blog Writer'] } },
             { id: '3', x: 842, y: 86, data: { label: 'Optimize', agentPath: ['Shared', 'Content Creation', 'SEO Optimizer'] } },
-            
+
             // Branch 2: Analysis path (middle branch)
             { id: '4', x: 468, y: 294, data: { label: 'Analyze', agentPath: ['Shared', 'Data Analysis', 'Sentiment Analyzer'] } },
             { id: '6', x: 809, y: 293, data: { label: 'Summarize', agentPath: ['Shared', 'Utility', 'Summarizer'] } },
-            
+
             // Branch 3: Translation path (bottom branch)
             { id: '5', x: 566, y: 561, data: { label: 'Translate', agentPath: ['Shared', 'Utility', 'Translator'] } },
-            
+
             // Convergence: Social media (far right)
             { id: '7', x: 1353, y: 282, data: { label: 'Social', agentPath: ['Shared', 'Content Creation', 'Tweet Generator'] } },
         ];
@@ -104,13 +212,13 @@
             { id: 'e1-2', source: '1', target: '2' },
             { id: 'e1-4', source: '1', target: '4' },
             { id: 'e1-5', source: '1', target: '5' },
-            
+
             // Content path: Write -> Optimize
             { id: 'e2-3', source: '2', target: '3' },
-            
+
             // Analysis path: Analyze -> Summarize
             { id: 'e4-6', source: '4', target: '6' },
-            
+
             // All paths converge to Social
             { id: 'e3-7', source: '3', target: '7' },
             { id: 'e6-7', source: '6', target: '7' },
@@ -120,7 +228,7 @@
         // Define workflow sequence: node IDs in order (shows branching execution)
         // 1. Research starts, 2-5. Three parallel branches, 3&6. Process branches, 7. Converge
         const workflowSequence = ['1', '2', '4', '5', '3', '6', '7'];
-        
+
         // Map node IDs to agent paths (for activeNode prop)
         const nodeToAgentPath = {
             '1': 'Shared/Data Analysis/Market Trends',
@@ -328,8 +436,23 @@ Combining all branch outputs into cohesive social content:
 
         // Create components once (not inside render) to maintain stable references
         const TeamBuilderComponent = TeamBuilder({ withBindings });
+        const KnowledgeGraphComponent = KnowledgeGraph({ withBindings });
+
+        // Lazy loaded wrapper for KnowledgeGraph
+        // Since we are in a single bundle, we simulate lazy loading by deferring render
+        const LazyKnowledgeGraph = React.lazy(() => {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({ default: KnowledgeGraphComponent });
+                }, 500); // Simulate network delay for effect
+            });
+        });
 
         const App = () => {
+            const [activeTab, setActiveTab] = React.useState('team-builder');
+            const [isKnowledgeGraphLoaded, setIsKnowledgeGraphLoaded] = React.useState(false);
+
+            // TeamBuilder State
             const [activeNode, setActiveNode] = React.useState(null);
             const [currentMessage, setCurrentMessage] = React.useState(null);
             const [currentNodeIndex, setCurrentNodeIndex] = React.useState(-1);
@@ -351,7 +474,7 @@ Combining all branch outputs into cohesive social content:
                 // Clear all timers
                 timersRef.current.forEach(timer => clearTimeout(timer));
                 timersRef.current = [];
-                
+
                 // Reset state
                 setIsSimulationStarted(false);
                 setCurrentNodeIndex(-1);
@@ -430,12 +553,58 @@ Combining all branch outputs into cohesive social content:
                 };
             }, [currentNodeIndex]);
 
+            // Handle Tab Change
+            const handleTabChange = (tab) => {
+                setActiveTab(tab);
+                if (tab === 'knowledge-graph') {
+                    setIsKnowledgeGraphLoaded(true);
+                }
+            };
+
             return React.createElement('div', { className: 'container' },
                 React.createElement('h1', null, 'Orcal UI Components Demo'),
 
+                // Tabs
+                React.createElement('div', { style: { display: 'flex', gap: '8px', marginBottom: '24px' } },
+                    React.createElement('button', {
+                        onClick: () => handleTabChange('team-builder'),
+                        style: {
+                            padding: '10px 20px',
+                            backgroundColor: activeTab === 'team-builder' ? '#0ea5e9' : '#e2e8f0',
+                            color: activeTab === 'team-builder' ? 'white' : '#64748b',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                        }
+                    }, 'Team Builder'),
+                    React.createElement('button', {
+                        onClick: () => handleTabChange('knowledge-graph'),
+                        style: {
+                            padding: '10px 20px',
+                            backgroundColor: activeTab === 'knowledge-graph' ? '#7c3aed' : '#e2e8f0',
+                            color: activeTab === 'knowledge-graph' ? 'white' : '#64748b',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                        }
+                    }, 'Knowledge Graph')
+                ),
+
+                // Team Builder Content
                 React.createElement('div', {
+                    style: { display: activeTab === 'team-builder' ? 'block' : 'none' },
                     className: 'component-section',
-                    style: { backgroundColor: '#f0f9ff', borderColor: '#0ea5e9' }
+                    style: {
+                        display: activeTab === 'team-builder' ? 'block' : 'none',
+                        backgroundColor: '#f0f9ff',
+                        borderColor: '#0ea5e9',
+                        padding: '16px',
+                        border: '1px solid #0ea5e9', // Fix duplicated style prop
+                        borderRadius: '8px',
+                        marginBottom: '24px'
+                    }
                 },
                     React.createElement('span', { className: 'component-label' }, 'TeamBuilder - Interactive Graph Editor'),
                     React.createElement('p', { style: { marginBottom: '12px', fontSize: '14px', color: '#64748b' } },
@@ -453,7 +622,8 @@ Combining all branch outputs into cohesive social content:
                                 fontSize: '14px',
                                 fontWeight: '600',
                                 cursor: 'pointer',
-                                transition: 'all 0.2s'
+                                transition: 'all 0.2s',
+                                marginRight: '8px'
                             }
                         }, isSimulationStarted ? 'Stop Simulation' : 'Start Simulation'),
                         React.createElement('button', {
@@ -493,13 +663,47 @@ Combining all branch outputs into cohesive social content:
                                 console.log("Saved Edges:", edges);
                                 alert("Saved!");
                             },
-                            handleViewAgent: ({ agentPath }) => {
-                                alert("View Agent: " + agentPath);
-                            },
-                            handleEditAgent: ({ agentPath }) => {
-                                alert("Edit Agent: " + agentPath);
-                            }
                         })
+                    )
+                ),
+
+                // Knowledge Graph Content (Lazy Loaded)
+                activeTab === 'knowledge-graph' && React.createElement('div', {
+                    className: 'component-section',
+                    style: {
+                        backgroundColor: '#f5f3ff',
+                        borderColor: '#7c3aed',
+                        padding: '16px',
+                        border: '1px solid #7c3aed',
+                        borderRadius: '8px'
+                    }
+                },
+                    React.createElement('span', { className: 'component-label' }, 'Knowledge Graph - Concept Explorer'),
+                    React.createElement('p', { style: { marginBottom: '12px', fontSize: '14px', color: '#64748b' } },
+                        'An interactive concept map for exploring hierarchical knowledge structures.'
+                    ),
+                    React.createElement('div', {
+                        style: {
+                            height: '600px',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }
+                    },
+                        React.createElement(React.Suspense, {
+                            fallback: React.createElement('div', {
+                                style: {
+                                    height: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#7c3aed'
+                                }
+                            }, 'Loading Knowledge Graph...')
+                        },
+                            React.createElement(LazyKnowledgeGraph, { data: KNOWLEDGE_TREE, title: "Wikipedia LLM Explorer" })
+                        )
                     )
                 )
             );
