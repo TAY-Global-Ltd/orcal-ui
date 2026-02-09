@@ -146,7 +146,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                 <div className="p-6 border-b border-zinc-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-violet-600 rounded-lg shadow-lg shadow-violet-200">
-                            <Network size={20} className="text-white" />
+                            <Network size={20} className="text-white w-5 h-5" />
                         </div>
                         <div>
                             <h1 className="text-lg font-bold tracking-tight text-zinc-900">Concept Map</h1>
@@ -171,7 +171,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                                 </span>
                                 {findParent(selectedNode.id) && (
                                     <span className="text-zinc-400 text-xs flex items-center gap-1">
-                                        <ChevronRight size={12} />
+                                        <ChevronRight size={12} className="w-3 h-3" />
                                         {findParent(selectedNode.id).label}
                                     </span>
                                 )}
@@ -203,7 +203,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                                                     <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[child.category] }} />
                                                     <span className="text-sm font-semibold text-zinc-700 group-hover:text-zinc-900 transition-colors">{child.label}</span>
                                                 </div>
-                                                <Plus size={14} className="text-zinc-300 group-hover:text-zinc-500 transition-transform group-hover:rotate-90" />
+                                                <Plus size={14} className="text-zinc-300 group-hover:text-zinc-500 transition-transform group-hover:rotate-90 w-3.5 h-3.5" />
                                             </button>
                                         ))}
                                     </div>
@@ -213,7 +213,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center p-12 text-center">
                             <div className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center mb-6">
-                                <BookOpen size={32} className="text-zinc-300" />
+                                <BookOpen size={32} className="text-zinc-300 w-8 h-8" />
                             </div>
                             <h3 className="text-xl font-bold text-zinc-900 mb-2">Select a Topic</h3>
                             <p className="text-zinc-400 text-sm">Pick a node on the map to explore its underlying principles and history.</p>
@@ -306,7 +306,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                 </div>
 
                 {/* Floating Controls */}
-                <div className="absolute bottom-8 right-8 flex flex-col gap-3">
+                <div className="absolute bottom-8 right-8 !left-auto !top-auto !w-fit !h-fit flex flex-col gap-3">
                     <div className="flex bg-white/90 backdrop-blur-md border border-zinc-200 rounded-2xl p-1 shadow-lg shadow-zinc-200/50">
                         <button
                             onClick={() => {
@@ -316,7 +316,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                             className="p-3 hover:bg-zinc-100 rounded-xl transition-colors text-zinc-400 hover:text-zinc-900"
                             title="Zoom In"
                         >
-                            <Plus size={18} />
+                            <Plus size={18} className="w-[18px] h-[18px]" />
                         </button>
                         <div className="w-px h-6 bg-zinc-200 self-center" />
                         <button
@@ -327,7 +327,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                             className="p-3 hover:bg-zinc-100 rounded-xl transition-colors text-zinc-400 hover:text-zinc-900"
                             title="Zoom Out"
                         >
-                            <Minus size={18} />
+                            <Minus size={18} className="w-[18px] h-[18px]" />
                         </button>
                         <div className="w-px h-6 bg-zinc-200 self-center" />
                         <button
@@ -338,7 +338,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                             className="p-3 hover:bg-zinc-100 rounded-xl transition-colors text-zinc-400 hover:text-zinc-900"
                             title="Reset View"
                         >
-                            <Move size={18} />
+                            <Move size={18} className="w-[18px] h-[18px]" />
                         </button>
                     </div>
 
@@ -356,9 +356,9 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                 </div>
 
                 {/* Top Hint */}
-                <div className="absolute top-8 right-8 bg-zinc-900 text-white px-4 py-2 rounded-full text-xs font-bold shadow-xl flex items-center gap-2">
-                    <Move size={14} className="text-zinc-400" />
-                    <span>Drag background to pan</span>
+                <div className="absolute top-8 right-8 !left-auto !bottom-auto !w-fit !h-fit bg-zinc-900 text-white px-4 py-2 rounded-full text-xs font-bold shadow-xl flex items-center gap-2">
+                    <Move size={14} className="text-zinc-400 w-3.5 h-3.5" />
+                    <span className="whitespace-nowrap">Drag background to pan</span>
                 </div>
             </div>
 
