@@ -248,7 +248,7 @@ const KnowledgeGraph = ({
                                     x1={parent.x} y1={parent.y}
                                     x2={node.x} y2={node.y}
                                     stroke={getCategoryColor(node.category) || '#d4d4d8'}
-                                    strokeWidth="1.5"
+                                    strokeWidth="2.5"
                                     strokeOpacity="0.15"
                                     strokeDasharray="4 4"
                                 />
