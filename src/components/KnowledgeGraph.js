@@ -235,7 +235,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
 
                 {/* The Graph Layer */}
                 <div
-                    className={`absolute inset-0 ${shouldAnimate ? 'transition-transform duration-700 ease-in-out' : ''}`}
+                    className={`absolute inset-0 pointer-events-none ${shouldAnimate ? 'transition-transform duration-700 ease-in-out' : ''}`}
                     style={{
                         transform: `scale(${zoom}) translate(calc(50% + ${offset.x}px), calc(50% + ${offset.y}px))`,
                         transformOrigin: '0 0'
@@ -272,6 +272,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                         absolute cursor-pointer transition-all duration-300 ease-out
                         flex items-center justify-center rounded-full border-2 
                         group hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+                        pointer-events-auto
                         ${selectedNodeId === node.id ? 'z-20 scale-110 shadow-xl' : 'scale-100 z-10'}
                     `}
                             style={{
