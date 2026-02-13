@@ -188,6 +188,15 @@
             ]
         };
 
+        const KNOWLEDGE_GRAPH_CATEGORY_COLORS = {
+            root: '#7c3aed',
+            history: '#2563eb',
+            tech: '#0891b2',
+            training: '#059669',
+            feature: '#d97706',
+            safety: '#dc2626',
+        };
+
         const demoNodes = [
             // Start: Research (far left)
             { id: '1', x: 50, y: 300, data: { label: 'Research', agentPath: ['Shared', 'Data Analysis', 'Market Trends'] } },
@@ -702,7 +711,11 @@ Combining all branch outputs into cohesive social content:
                                 }
                             }, 'Loading Knowledge Graph...')
                         },
-                            React.createElement(LazyKnowledgeGraph, { data: KNOWLEDGE_TREE, title: "Wikipedia LLM Explorer" })
+                            React.createElement(LazyKnowledgeGraph, {
+                                data: KNOWLEDGE_TREE,
+                                title: "Wikipedia LLM Explorer",
+                                categoryColors: KNOWLEDGE_GRAPH_CATEGORY_COLORS
+                            })
                         )
                     )
                 )
