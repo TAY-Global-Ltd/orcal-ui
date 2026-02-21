@@ -1,5 +1,6 @@
 import TeamBuilder from "./components/TeamBuilder";
 import KnowledgeGraph from "./components/KnowledgeGraph";
+import DecentralisedTeam from "./components/DecentralisedTeam";
 
 /**
  * See the docs for more info on API versions:
@@ -69,10 +70,89 @@ import KnowledgeGraph from "./components/KnowledgeGraph";
  *   }}
  * />
  * ```
+ * 
+ * DecentralisedTeam Props:
+ * - agents: Array - List of agent nodes to display
+ * - taskQueue: Array - List of tasks to display in the task queue sidebar
+ * - agentTree: Object (optional) - Hierarchical structure for agent selection
+ * - activeAgentId: string (optional) - ID of the currently active agent
+ * - onAgentUpdate: Function (optional) - Handler for agent updates
+ * - onAgentView: Function (optional) - Handler for viewing an agent
+ * - onTaskClick: Function (optional) - Handler for clicking a task
+ * 
+ * Example Usage:
+ * ```jsx
+ * import { DecentralisedTeam } from 'orcal-ui';
+ * import { useState, useEffect } from 'react';
+ * 
+ * function DemoTeam() {
+ *   const [taskQueue, setTaskQueue] = useState([
+ *     { id: 't1', title: 'Research Commodity Market', status: 'pending' },
+ *     { id: 't2', title: 'Research Equity Market', status: 'pending' },
+ *     { id: 't3', title: 'Get position of the trader book', status: 'pending' },
+ *     { id: 't4', title: 'Run delta risk of the trader book', status: 'pending' },
+ *     { id: 't5', title: 'Run value at risk on the trader book', status: 'pending' },
+ *     { id: 't6', title: 'Create a PDF report', status: 'pending' },
+ *     { id: 't7', title: 'Email the report', status: 'pending' }
+ *   ]);
+ * 
+ *   const [agents] = useState([
+ *     { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Research Agent'] } },
+ *     { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Risk Agent'] } },
+ *     { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Report Agent'] } }
+ *   ]);
+ * 
+ *   // Simulation of agents picking up tasks and completing them
+ *   useEffect(() => {
+ *     const interval = setInterval(() => {
+ *       setTaskQueue(currentQueue => {
+ *         const newQueue = [...currentQueue];
+ *         // 1. Complete any tasks currently 'in-progress' occasionally
+ *         newQueue.forEach(t => {
+ *           if (t.status === 'in-progress' && Math.random() > 0.5) {
+ *             t.status = 'completed';
+ *           }
+ *         });
+ *         
+ *         // 2. Assign pending tasks to idle agents
+ *         const busyAgentIds = newQueue.filter(t => t.status === 'in-progress').map(t => t.assigneeId);
+ *         const idleAgents = agents.filter(a => !busyAgentIds.includes(a.id));
+ *         
+ *         idleAgents.forEach(agent => {
+ *           // Simple logic: pick the first pending task
+ *           const nextTask = newQueue.find(t => t.status === 'pending');
+ *           if (nextTask) {
+ *             nextTask.status = 'in-progress';
+ *             nextTask.assigneeId = agent.id;
+ *           }
+ *         });
+ *         
+ *         return newQueue;
+ *       });
+ *     }, 3000); // Process every 3 seconds
+ *     return () => clearInterval(interval);
+ *   }, [agents]);
+ * 
+ *   // Active agent could be the one working on the most recently started task
+ *   const activeTask = taskQueue.find(t => t.status === 'in-progress');
+ *   const activeAgentId = activeTask ? activeTask.assigneeId : null;
+ * 
+ *   return (
+ *     <div style={{ height: '600px' }}>
+ *       <DecentralisedTeam 
+ *         agents={agents} 
+ *         taskQueue={taskQueue} 
+ *         activeAgentId={activeAgentId}
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
  */
 export default {
     v1: {
         TeamBuilder,
         KnowledgeGraph,
+        DecentralisedTeam,
     },
 };

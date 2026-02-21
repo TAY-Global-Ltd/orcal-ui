@@ -446,6 +446,7 @@ Combining all branch outputs into cohesive social content:
         // Create components once (not inside render) to maintain stable references
         const TeamBuilderComponent = TeamBuilder({ withBindings });
         const KnowledgeGraphComponent = KnowledgeGraph({ withBindings });
+        const DecentralisedTeamComponent = components.v1.DecentralisedTeam({ withBindings });
 
         // Lazy loaded wrapper for KnowledgeGraph
         // Since we are in a single bundle, we simulate lazy loading by deferring render
@@ -460,6 +461,7 @@ Combining all branch outputs into cohesive social content:
         const App = () => {
             const [activeTab, setActiveTab] = React.useState('team-builder');
             const [isKnowledgeGraphLoaded, setIsKnowledgeGraphLoaded] = React.useState(false);
+            const [isDecentralisedLoaded, setIsDecentralisedLoaded] = React.useState(false);
 
             // TeamBuilder State
             const [activeNode, setActiveNode] = React.useState(null);
@@ -469,6 +471,63 @@ Combining all branch outputs into cohesive social content:
             const [isSimulationStarted, setIsSimulationStarted] = React.useState(false);
             const [showPrompt, setShowPrompt] = React.useState(false);
             const timersRef = React.useRef([]);
+
+            // DecentralisedTeam State (Demo Logic)
+            const [taskQueue, setTaskQueue] = React.useState([
+                { id: 't1', title: 'Research Commodity Market', status: 'pending' },
+                { id: 't2', title: 'Research Equity Market', status: 'pending' },
+                { id: 't3', title: 'Get position of the trader book', status: 'pending' },
+                { id: 't4', title: 'Run delta risk of the trader book', status: 'pending' },
+                { id: 't5', title: 'Run value at risk on the trader book', status: 'pending' },
+                { id: 't6', title: 'Create a PDF report', status: 'pending' },
+                { id: 't7', title: 'Email the report', status: 'pending' }
+            ]);
+
+            const [agents] = React.useState([
+                { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Research Agent'] } },
+                { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Risk Agent'] } },
+                { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Report Agent'] } }
+            ]);
+
+            React.useEffect(() => {
+                if (!isDecentralisedLoaded) return;
+
+                const interval = setInterval(() => {
+                    setTaskQueue(currentQueue => {
+                        const newQueue = [...currentQueue];
+                        let madeChanges = false;
+
+                        // 1. Complete randomly 
+                        newQueue.forEach(t => {
+                            if (t.status === 'in-progress' && Math.random() > 0.4) {
+                                t.status = 'completed';
+                                madeChanges = true;
+                            }
+                        });
+
+                        // 2. Assign idle agents to pending tasks
+                        const busyAgentIds = newQueue.filter(t => t.status === 'in-progress').map(t => t.assigneeId);
+                        const idleAgents = agents.filter(a => !busyAgentIds.includes(a.id));
+
+                        idleAgents.forEach(agent => {
+                            const nextTask = newQueue.find(t => t.status === 'pending');
+                            if (nextTask) {
+                                nextTask.status = 'in-progress';
+                                nextTask.assigneeId = agent.id;
+                                madeChanges = true;
+                            }
+                        });
+
+                        return madeChanges ? newQueue : currentQueue;
+                    });
+                }, 2000);
+
+                return () => clearInterval(interval);
+            }, [agents, isDecentralisedLoaded]);
+
+            const activeTask = taskQueue.find(t => t.status === 'in-progress');
+            const activeAgentId = activeTask ? activeTask.assigneeId : null;
+
 
             const startSimulation = () => {
                 // Reset to beginning
@@ -568,6 +627,9 @@ Combining all branch outputs into cohesive social content:
                 if (tab === 'knowledge-graph') {
                     setIsKnowledgeGraphLoaded(true);
                 }
+                if (tab === 'decentralised-team') {
+                    setIsDecentralisedLoaded(true);
+                }
             };
 
             return React.createElement('div', { className: 'container' },
@@ -598,7 +660,19 @@ Combining all branch outputs into cohesive social content:
                             fontWeight: '600',
                             cursor: 'pointer'
                         }
-                    }, 'Knowledge Graph')
+                    }, 'Knowledge Graph'),
+                    React.createElement('button', {
+                        onClick: () => handleTabChange('decentralised-team'),
+                        style: {
+                            padding: '10px 20px',
+                            backgroundColor: activeTab === 'decentralised-team' ? '#9333ea' : '#e2e8f0',
+                            color: activeTab === 'decentralised-team' ? 'white' : '#64748b',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                        }
+                    }, 'Decentralised Team')
                 ),
 
                 // Team Builder Content
@@ -718,7 +792,40 @@ Combining all branch outputs into cohesive social content:
                             })
                         )
                     )
+                ),
+
+                // Decentralised Team Content
+                activeTab === 'decentralised-team' && React.createElement('div', {
+                    className: 'component-section',
+                    style: {
+                        backgroundColor: '#faf5ff',
+                        borderColor: '#9333ea',
+                        padding: '16px',
+                        border: '1px solid #9333ea',
+                        borderRadius: '8px'
+                    }
+                },
+                    React.createElement('span', { className: 'component-label' }, 'Decentralised Team - Swarm Simulation'),
+                    React.createElement('p', { style: { marginBottom: '12px', fontSize: '14px', color: '#64748b' } },
+                        'A flexible queue-based agent team where nodes work independently and process tasks as they arrive.'
+                    ),
+                    React.createElement('div', {
+                        style: {
+                            height: '600px',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }
+                    },
+                        React.createElement(DecentralisedTeamComponent, {
+                            agents: agents,
+                            taskQueue: taskQueue,
+                            activeAgentId: activeAgentId
+                        })
+                    )
                 )
+
             );
         };
 
