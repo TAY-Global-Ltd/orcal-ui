@@ -483,72 +483,85 @@ Combining all branch outputs into cohesive social content:
             const AGENT_TREE_DEMO = {
                 Shared: {
                     "Content Creation": ["Blog Writer", "Tweet Generator", "SEO Optimizer"],
-                    "Data Analysis": ["Market Trends", "Sentiment Analyzer", "Chart Builder"],
-                    "Utility": ["Translator", "Summarizer"]
+                    "Data Analysis": ["Market Trends", "Sentiment Analyzer", "Risk Agent", "Chart Builder"],
+                    "Utility": ["Translator", "Summarizer", "Report Agent", "Orchestrator"]
                 }
             };
 
-            const getInitialTaskQueue = () => [
-                { id: 't1', title: 'Research Commodity Market', status: 'pending', requiredAgent: 'research-agent' },
-                { id: 't2', title: 'Research Equity Market', status: 'pending', requiredAgent: 'research-agent' },
-                { id: 't3', title: 'Get position of the trader book', status: 'pending', requiredAgent: 'risk-agent' },
-                { id: 't4', title: 'Run delta risk of the trader book', status: 'pending', requiredAgent: 'risk-agent' },
-                { id: 't5', title: 'Run value at risk on the trader book', status: 'pending', requiredAgent: 'risk-agent' },
-                { id: 't6', title: 'Create a PDF report', status: 'pending', requiredAgent: 'report-agent' },
-                { id: 't7', title: 'Email the report', status: 'pending', requiredAgent: 'report-agent' }
-            ];
-
-            const [taskQueue, setTaskQueue] = React.useState(getInitialTaskQueue());
+            const [taskQueue, setTaskQueue] = React.useState([]);
+            const [agents, setAgents] = React.useState([]);
+            const [simulationPhase, setSimulationPhase] = React.useState(0);
 
             const toggleDecentralisedSimulation = () => {
                 if (!isDecentralisedSimulationStarted) {
-                    setTaskQueue(getInitialTaskQueue());
+                    setTaskQueue([]);
+                    setAgents([]);
+                    setSimulationPhase(0);
                     setHasDecentralisedSimulationRun(true);
                 }
                 setIsDecentralisedSimulationStarted(!isDecentralisedSimulationStarted);
             };
 
-            const [agents] = React.useState([
-                { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Market Trends'] } },
-                { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Risk Agent'] } },
-                { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Report Agent'] } }
-            ]);
-
             React.useEffect(() => {
                 if (!isDecentralisedLoaded || !isDecentralisedSimulationStarted) return;
 
-                const interval = setInterval(() => {
-                    setTaskQueue(currentQueue => {
-                        const newQueue = [...currentQueue];
-                        let madeChanges = false;
+                const timer = setTimeout(() => {
+                    if (simulationPhase === 0) {
+                        setAgents([{ id: 'orchestrator', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Orchestrator'] } }]);
+                        setSimulationPhase(1);
+                    } else if (simulationPhase === 1) {
+                        setTaskQueue([
+                            { id: 't1', title: 'Research Commodity Market', status: 'pending', requiredAgent: 'research-agent' },
+                            { id: 't2', title: 'Research Equity Market', status: 'pending', requiredAgent: 'research-agent' },
+                            { id: 't3', title: 'Get position of the trader book', status: 'pending', requiredAgent: 'risk-agent' },
+                            { id: 't4', title: 'Run delta risk of the trader book', status: 'pending', requiredAgent: 'risk-agent' },
+                            { id: 't5', title: 'Run value at risk on the trader book', status: 'pending', requiredAgent: 'risk-agent' },
+                            { id: 't6', title: 'Create a PDF report', status: 'pending', requiredAgent: 'report-agent' },
+                            { id: 't7', title: 'Email the report', status: 'pending', requiredAgent: 'report-agent' }
+                        ]);
+                        setSimulationPhase(2);
+                    } else if (simulationPhase === 2) {
+                        setAgents(current => [
+                            ...current,
+                            { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Market Trends'] } },
+                            { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Risk Agent'] } },
+                            { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Report Agent'] } }
+                        ]);
+                        setSimulationPhase(3);
+                    } else if (simulationPhase >= 3) {
+                        setTaskQueue(currentQueue => {
+                            const newQueue = [...currentQueue];
+                            let madeChanges = false;
 
-                        // 1. Complete randomly 
-                        newQueue.forEach(t => {
-                            if (t.status === 'in-progress' && Math.random() > 0.4) {
-                                t.status = 'completed';
-                                madeChanges = true;
-                            }
+                            // 1. Complete randomly 
+                            newQueue.forEach(t => {
+                                if (t.status === 'in-progress' && Math.random() > 0.4) {
+                                    t.status = 'completed';
+                                    madeChanges = true;
+                                }
+                            });
+
+                            // 2. Assign idle agents to pending tasks
+                            const busyAgentIds = newQueue.filter(t => t.status === 'in-progress').map(t => t.assigneeId);
+                            const idleAgents = agents.filter(a => !busyAgentIds.includes(a.id));
+
+                            idleAgents.forEach(agent => {
+                                const nextTask = newQueue.find(t => t.status === 'pending' && t.requiredAgent === agent.id);
+                                if (nextTask) {
+                                    nextTask.status = 'in-progress';
+                                    nextTask.assigneeId = agent.id;
+                                    madeChanges = true;
+                                }
+                            });
+
+                            return madeChanges ? newQueue : currentQueue;
                         });
+                        setSimulationPhase(p => p + 1);
+                    }
+                }, 1500);
 
-                        // 2. Assign idle agents to pending tasks
-                        const busyAgentIds = newQueue.filter(t => t.status === 'in-progress').map(t => t.assigneeId);
-                        const idleAgents = agents.filter(a => !busyAgentIds.includes(a.id));
-
-                        idleAgents.forEach(agent => {
-                            const nextTask = newQueue.find(t => t.status === 'pending' && t.requiredAgent === agent.id);
-                            if (nextTask) {
-                                nextTask.status = 'in-progress';
-                                nextTask.assigneeId = agent.id;
-                                madeChanges = true;
-                            }
-                        });
-
-                        return madeChanges ? newQueue : currentQueue;
-                    });
-                }, 2000);
-
-                return () => clearInterval(interval);
-            }, [agents, isDecentralisedLoaded, isDecentralisedSimulationStarted]);
+                return () => clearTimeout(timer);
+            }, [agents, isDecentralisedLoaded, isDecentralisedSimulationStarted, simulationPhase]);
 
             React.useEffect(() => {
                 if (isDecentralisedSimulationStarted && taskQueue.length > 0 && taskQueue.every(t => t.status === 'completed')) {
