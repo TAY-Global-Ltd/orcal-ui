@@ -86,7 +86,7 @@ import DecentralisedTeam from "./components/DecentralisedTeam";
  * import { useState, useEffect } from 'react';
  * 
  * function DemoTeam() {
- *   const [taskQueue, setTaskQueue] = useState([
+ *   const getInitialTaskQueue = () => [
  *     { id: 't1', title: 'Research Commodity Market', status: 'pending' },
  *     { id: 't2', title: 'Research Equity Market', status: 'pending' },
  *     { id: 't3', title: 'Get position of the trader book', status: 'pending' },
@@ -94,7 +94,9 @@ import DecentralisedTeam from "./components/DecentralisedTeam";
  *     { id: 't5', title: 'Run value at risk on the trader book', status: 'pending' },
  *     { id: 't6', title: 'Create a PDF report', status: 'pending' },
  *     { id: 't7', title: 'Email the report', status: 'pending' }
- *   ]);
+ *   ];
+ * 
+ *   const [taskQueue, setTaskQueue] = useState(getInitialTaskQueue());
  * 
  *   const [agents] = useState([
  *     { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Research Agent'] } },
@@ -145,7 +147,10 @@ import DecentralisedTeam from "./components/DecentralisedTeam";
  *     <div style={{ height: '600px', display: 'flex', flexDirection: 'column' }}>
  *       <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '8px' }}>
  *         <button 
- *           onClick={() => setIsSimulationStarted(!isSimulationStarted)}
+ *           onClick={() => {
+ *             if (!isSimulationStarted) setTaskQueue(getInitialTaskQueue());
+ *             setIsSimulationStarted(!isSimulationStarted);
+ *           }}
  *           style={{
  *             padding: '12px 24px',
  *             backgroundColor: isSimulationStarted ? '#ef4444' : '#0ea5e9',

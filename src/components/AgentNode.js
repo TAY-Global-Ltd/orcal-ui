@@ -142,26 +142,23 @@ const AgentNode = ({
 
                     <div className="flex gap-[4px]">
                         {/* View/Edit Icon */}
-                        {!isEditing ? (
-                            handleView && node.data.agentPath.length > 0 && (
-                                <button
-                                    onClick={() => handleView({ agentPath: node.data.agentPath.join('/') })}
-                                    className="p-[6px] rounded-[6px] text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                                    title="View Agent"
-                                >
-                                    <Eye size={16} />
-                                </button>
-                            )
-                        ) : (
-                            handleEdit && node.data.agentPath.length > 0 && (
-                                <button
-                                    onClick={() => handleEdit({ agentPath: node.data.agentPath.join('/') })}
-                                    className="p-[6px] rounded-[6px] text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
-                                    title="Edit Agent"
-                                >
-                                    <Edit size={16} />
-                                </button>
-                            )
+                        {handleView && node.data.agentPath.length > 0 && (
+                            <button
+                                onClick={() => handleView({ agentPath: node.data.agentPath.join('/') })}
+                                className="p-[6px] rounded-[6px] text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                title="View Agent"
+                            >
+                                <Eye size={16} />
+                            </button>
+                        )}
+                        {isEditing && handleEdit && node.data.agentPath.length > 0 && (
+                            <button
+                                onClick={() => handleEdit({ agentPath: node.data.agentPath.join('/') })}
+                                className="p-[6px] rounded-[6px] text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                                title="Edit Agent"
+                            >
+                                <Edit size={16} />
+                            </button>
                         )}
                         {/* Root Node Indicator */}
                         {isRootNode && (
