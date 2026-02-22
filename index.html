@@ -507,7 +507,7 @@ Combining all branch outputs into cohesive social content:
 
                 const timer = setTimeout(() => {
                     if (simulationPhase === 0) {
-                        setAgents([{ id: 'orchestrator', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Orchestrator'] } }]);
+                        setAgents([{ id: 'orchestrator', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Orchestrator'], colour: '#8b5cf6' } }]);
                         setSimulationPhase(1);
                     } else if (simulationPhase === 1) {
                         setTaskQueue([
@@ -523,9 +523,9 @@ Combining all branch outputs into cohesive social content:
                     } else if (simulationPhase === 2) {
                         setAgents(current => [
                             ...current,
-                            { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Market Trends'] } },
-                            { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Risk Agent'] } },
-                            { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Report Agent'] } }
+                            { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Market Trends'], colour: '#3b82f6' } },
+                            { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Risk Agent'], colour: '#ef4444' } },
+                            { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Report Agent'], colour: '#10b981' } }
                         ]);
                         setSimulationPhase(3);
                     } else if (simulationPhase >= 3) {

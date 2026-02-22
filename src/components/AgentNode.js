@@ -101,6 +101,7 @@ const AgentNode = ({
     nodeRef,
     style,
     isAbsolute = true,
+    colour,
     children
 }) => {
     return (
@@ -195,8 +196,16 @@ const AgentNode = ({
                         onClick={() => setOpenSelectorId(openSelectorId === node.id ? null : node.id)}
                         className="w-full flex items-center justify-between px-[12px] py-[8px] bg-slate-50 border border-slate-200 rounded-[6px] text-[14px] text-slate-600 hover:bg-slate-100 transition-colors"
                     >
-                        <span>{agentName}</span>
-                        <ChevronDown size={14} />
+                        <div className="flex items-center gap-[8px] overflow-hidden">
+                            {colour && (
+                                <div
+                                    className="w-[10px] h-[10px] rounded-full shrink-0"
+                                    style={{ backgroundColor: colour }}
+                                />
+                            )}
+                            <span className="truncate">{agentName}</span>
+                        </div>
+                        <ChevronDown size={14} className="shrink-0" />
                     </button>
 
                     {openSelectorId === node.id && isEditing && (

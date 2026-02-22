@@ -92,11 +92,22 @@ function DecentralisedTeam({
                                         )}
                                     </div>
                                     <div className="flex items-center justify-end mt-2">
-                                        {task.assigneeId && (
-                                            <span className="text-xs text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 max-w-[120px] truncate block">
-                                                {agents.find(a => a.id === task.assigneeId)?.data?.agentPath?.slice(-1)?.[0] || 'Assigned'}
-                                            </span>
-                                        )}
+                                        {task.assigneeId && (() => {
+                                            const assignedAgent = agents.find(a => a.id === task.assigneeId);
+                                            const colour = assignedAgent?.data?.colour;
+                                            const name = assignedAgent?.data?.agentPath?.slice(-1)?.[0] || 'Assigned';
+                                            return (
+                                                <div className="flex items-center gap-[6px] text-xs text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 max-w-[120px]">
+                                                    {colour && (
+                                                        <div
+                                                            className="w-[8px] h-[8px] rounded-full shrink-0"
+                                                            style={{ backgroundColor: colour }}
+                                                        />
+                                                    )}
+                                                    <span className="truncate block">{name}</span>
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                             ))
@@ -140,6 +151,7 @@ function DecentralisedTeam({
                                             handleView={onAgentView}
                                             isAbsolute={false}
                                             style={{ margin: 0 }}
+                                            colour={node.data?.colour}
                                         />
                                     </div>
                                 );
