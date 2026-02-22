@@ -56,11 +56,13 @@ function DecentralisedTeam({
     onTaskClick = () => { }
 }) {
     const [openSelectorId, setOpenSelectorId] = useState(null);
-    const [showCompletedTasks, setShowCompletedTasks] = useState(true);
+    const [showCompletedTasks, setShowCompletedTasks] = useState(false);
+    const [, forceRender] = useState({});
 
     const prevTaskStatuses = useRef({});
     const containerRef = useRef(null);
     const animationIdCounter = useRef(0);
+    const animatingTaskIdsRef = useRef(new Set());
     const [animations, setAnimations] = useState([]);
 
     useEffect(() => {
@@ -70,8 +72,14 @@ function DecentralisedTeam({
             if (prev) {
                 if (prev.status === 'pending' && task.status === 'in-progress') {
                     newAnimations.push({ task, type: 'pickup' });
-                } else if (prev.status === 'in-progress' && task.status === 'completed' && showCompletedTasks) {
+                } else if (prev.status === 'in-progress' && task.status === 'completed') {
                     newAnimations.push({ task: { ...task, assigneeId: prev.assigneeId || task.assigneeId }, type: 'complete' });
+
+                    animatingTaskIdsRef.current.add(task.id);
+                    setTimeout(() => {
+                        animatingTaskIdsRef.current.delete(task.id);
+                        forceRender({});
+                    }, 1000);
                 }
             }
         });
@@ -133,7 +141,13 @@ function DecentralisedTeam({
 
     const filteredTaskQueue = showCompletedTasks
         ? taskQueue
-        : taskQueue.filter(t => t.status !== 'completed');
+        : taskQueue.filter(t => {
+            if (t.status !== 'completed') return true;
+            const prev = prevTaskStatuses.current[t.id];
+            if (prev && prev.status === 'in-progress') return true;
+            if (animatingTaskIdsRef.current.has(t.id)) return true;
+            return false;
+        });
 
     return (
         <div ref={containerRef} className="flex flex-col h-full min-h-[500px] w-full bg-slate-50 text-slate-900 font-sans overflow-hidden relative">
