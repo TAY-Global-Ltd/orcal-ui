@@ -18,7 +18,7 @@ function DecentralisedTeam({
     onTaskClick = () => { }
 }) {
     const [openSelectorId, setOpenSelectorId] = useState(null);
-    const [showCompletedTasks, setShowCompletedTasks] = useState(true);
+    const [showCompletedTasks, setShowCompletedTasks] = useState(false);
 
     const filteredTaskQueue = showCompletedTasks
         ? taskQueue
