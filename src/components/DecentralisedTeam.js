@@ -46,6 +46,7 @@ const AnimatedCircle = ({ anim }) => {
     );
 };
 function DecentralisedTeam({
+    teamName = "Decentralised Team",
     agents = [],
     taskQueue = [],
     agentTree = {},
@@ -145,7 +146,7 @@ function DecentralisedTeam({
                     <div className="p-2 bg-purple-600 rounded text-white">
                         <Users size={18} />
                     </div>
-                    <h1 className="font-bold text-lg hidden sm:block">Decentralised Team</h1>
+                    <h1 className="font-bold text-lg hidden sm:block">{teamName}</h1>
                 </div>
                 <div className="flex items-center gap-4 text-sm font-medium text-slate-600">
                     <span>{agents.length} Active Agents</span>
@@ -162,7 +163,7 @@ function DecentralisedTeam({
                     <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <LayoutList size={18} className="text-slate-500" />
-                            <h2 className="font-semibold text-slate-700">Team Task Queue</h2>
+                            <h2 className="font-semibold text-slate-700">Task Queue</h2>
                         </div>
                         <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
                             <input
