@@ -18,6 +18,11 @@ function DecentralisedTeam({
     onTaskClick = () => { }
 }) {
     const [openSelectorId, setOpenSelectorId] = useState(null);
+    const [showCompletedTasks, setShowCompletedTasks] = useState(true);
+
+    const filteredTaskQueue = showCompletedTasks
+        ? taskQueue
+        : taskQueue.filter(t => t.status !== 'completed');
 
     return (
         <div className="flex flex-col h-full min-h-[500px] w-full bg-slate-50 text-slate-900 font-sans overflow-hidden">
@@ -41,18 +46,29 @@ function DecentralisedTeam({
 
                 {/* Task Queue Sidebar */}
                 <div className="w-full md:w-80 bg-white border-r border-slate-200 flex flex-col shrink-0 overflow-hidden shadow-sm z-10">
-                    <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-                        <LayoutList size={18} className="text-slate-500" />
-                        <h2 className="font-semibold text-slate-700">Team Task Queue</h2>
+                    <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                            <LayoutList size={18} className="text-slate-500" />
+                            <h2 className="font-semibold text-slate-700">Team Task Queue</h2>
+                        </div>
+                        <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={showCompletedTasks}
+                                onChange={(e) => setShowCompletedTasks(e.target.checked)}
+                                className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                            />
+                            Show Completed
+                        </label>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                        {taskQueue.length === 0 ? (
+                        {filteredTaskQueue.length === 0 ? (
                             <div className="text-center p-8 text-slate-400 text-sm">
-                                No tasks in queue. External events will add tasks here.
+                                {taskQueue.length === 0 ? "No tasks in queue. External events will add tasks here." : "No tasks match current filters."}
                             </div>
                         ) : (
-                            taskQueue.map((task) => (
+                            filteredTaskQueue.map((task) => (
                                 <div
                                     key={task.id}
                                     onClick={() => onTaskClick(task)}
@@ -75,13 +91,7 @@ function DecentralisedTeam({
                                             <div className="w-2 h-2 rounded-full bg-slate-300 mt-1 shrink-0" />
                                         )}
                                     </div>
-                                    <div className="flex items-center justify-between mt-2">
-                                        <span className={`text-xs px-2 py-0.5 rounded-full ${task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                                            task.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
-                                                'bg-slate-100 text-slate-600'
-                                            }`}>
-                                            {task.priority || 'Normal'}
-                                        </span>
+                                    <div className="flex items-center justify-end mt-2">
                                         {task.assigneeId && (
                                             <span className="text-xs text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 max-w-[120px] truncate block">
                                                 {agents.find(a => a.id === task.assigneeId)?.data?.agentPath?.slice(-1)?.[0] || 'Assigned'}
