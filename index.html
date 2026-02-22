@@ -462,6 +462,7 @@ Combining all branch outputs into cohesive social content:
             const [activeTab, setActiveTab] = React.useState('team-builder');
             const [isKnowledgeGraphLoaded, setIsKnowledgeGraphLoaded] = React.useState(false);
             const [isDecentralisedLoaded, setIsDecentralisedLoaded] = React.useState(false);
+            const [isDecentralisedSimulationStarted, setIsDecentralisedSimulationStarted] = React.useState(false);
 
             // TeamBuilder State
             const [activeNode, setActiveNode] = React.useState(null);
@@ -473,14 +474,22 @@ Combining all branch outputs into cohesive social content:
             const timersRef = React.useRef([]);
 
             // DecentralisedTeam State (Demo Logic)
+            const AGENT_TREE_DEMO = {
+                Shared: {
+                    "Content Creation": ["Blog Writer", "Tweet Generator", "SEO Optimizer"],
+                    "Data Analysis": ["Market Trends", "Sentiment Analyzer", "Chart Builder"],
+                    "Utility": ["Translator", "Summarizer"]
+                }
+            };
+
             const [taskQueue, setTaskQueue] = React.useState([
-                { id: 't1', title: 'Research Commodity Market', status: 'pending' },
-                { id: 't2', title: 'Research Equity Market', status: 'pending' },
-                { id: 't3', title: 'Get position of the trader book', status: 'pending' },
-                { id: 't4', title: 'Run delta risk of the trader book', status: 'pending' },
-                { id: 't5', title: 'Run value at risk on the trader book', status: 'pending' },
-                { id: 't6', title: 'Create a PDF report', status: 'pending' },
-                { id: 't7', title: 'Email the report', status: 'pending' }
+                { id: 't1', title: 'Research Commodity Market', status: 'pending', requiredAgent: 'research-agent' },
+                { id: 't2', title: 'Research Equity Market', status: 'pending', requiredAgent: 'research-agent' },
+                { id: 't3', title: 'Get position of the trader book', status: 'pending', requiredAgent: 'risk-agent' },
+                { id: 't4', title: 'Run delta risk of the trader book', status: 'pending', requiredAgent: 'risk-agent' },
+                { id: 't5', title: 'Run value at risk on the trader book', status: 'pending', requiredAgent: 'risk-agent' },
+                { id: 't6', title: 'Create a PDF report', status: 'pending', requiredAgent: 'report-agent' },
+                { id: 't7', title: 'Email the report', status: 'pending', requiredAgent: 'report-agent' }
             ]);
 
             const [agents] = React.useState([
@@ -490,7 +499,7 @@ Combining all branch outputs into cohesive social content:
             ]);
 
             React.useEffect(() => {
-                if (!isDecentralisedLoaded) return;
+                if (!isDecentralisedLoaded || !isDecentralisedSimulationStarted) return;
 
                 const interval = setInterval(() => {
                     setTaskQueue(currentQueue => {
@@ -510,7 +519,7 @@ Combining all branch outputs into cohesive social content:
                         const idleAgents = agents.filter(a => !busyAgentIds.includes(a.id));
 
                         idleAgents.forEach(agent => {
-                            const nextTask = newQueue.find(t => t.status === 'pending');
+                            const nextTask = newQueue.find(t => t.status === 'pending' && t.requiredAgent === agent.id);
                             if (nextTask) {
                                 nextTask.status = 'in-progress';
                                 nextTask.assigneeId = agent.id;
@@ -523,10 +532,10 @@ Combining all branch outputs into cohesive social content:
                 }, 2000);
 
                 return () => clearInterval(interval);
-            }, [agents, isDecentralisedLoaded]);
+            }, [agents, isDecentralisedLoaded, isDecentralisedSimulationStarted]);
 
-            const activeTask = taskQueue.find(t => t.status === 'in-progress');
-            const activeAgentId = activeTask ? activeTask.assigneeId : null;
+            const activeTasks = taskQueue.filter(t => t.status === 'in-progress');
+            const activeAgentIds = activeTasks.map(t => t.assigneeId);
 
 
             const startSimulation = () => {
@@ -809,6 +818,23 @@ Combining all branch outputs into cohesive social content:
                     React.createElement('p', { style: { marginBottom: '12px', fontSize: '14px', color: '#64748b' } },
                         'A flexible queue-based agent team where nodes work independently and process tasks as they arrive.'
                     ),
+                    React.createElement('div', { className: 'flex gap-2 mb-4' },
+                        React.createElement('button', {
+                            onClick: () => setIsDecentralisedSimulationStarted(!isDecentralisedSimulationStarted),
+                            style: {
+                                padding: '12px 24px',
+                                backgroundColor: isDecentralisedSimulationStarted ? '#ef4444' : '#0ea5e9',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                marginRight: '8px'
+                            }
+                        }, isDecentralisedSimulationStarted ? 'Stop Simulation' : 'Start Simulation')
+                    ),
                     React.createElement('div', {
                         style: {
                             height: '600px',
@@ -821,7 +847,8 @@ Combining all branch outputs into cohesive social content:
                         React.createElement(DecentralisedTeamComponent, {
                             agents: agents,
                             taskQueue: taskQueue,
-                            activeAgentId: activeAgentId
+                            activeAgentId: activeAgentIds,
+                            agentTree: AGENT_TREE_DEMO
                         })
                     )
                 )

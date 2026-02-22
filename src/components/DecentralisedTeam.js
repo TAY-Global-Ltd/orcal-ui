@@ -4,17 +4,6 @@ import { Users, LayoutList, CheckCircle2, CircleDashed } from 'lucide-react';
 import "../tailwind.css";
 
 /**
- * MOCK DATA Fallback
- */
-const AGENT_TREE = {
-    Shared: {
-        "Content Creation": ["Blog Writer", "Tweet Generator", "SEO Optimizer"],
-        "Data Analysis": ["Market Trends", "Sentiment Analyzer", "Chart Builder"],
-        "Utility": ["Translator", "Summarizer"]
-    }
-};
-
-/**
  * COMPONENT: DecentralisedTeam
  * Simulates a decentralized pool of agents that appear/disappear based on props.
  * Agents process a shared task queue independently.
@@ -22,7 +11,7 @@ const AGENT_TREE = {
 function DecentralisedTeam({
     agents = [],
     taskQueue = [],
-    agentTree = AGENT_TREE,
+    agentTree = {},
     activeAgentId = null,
     onAgentUpdate = () => { },
     onAgentView = () => { },
@@ -68,10 +57,10 @@ function DecentralisedTeam({
                                     key={task.id}
                                     onClick={() => onTaskClick(task)}
                                     className={`p-3 rounded-lg border cursor-pointer transition-all ${task.status === 'completed'
-                                            ? 'bg-slate-50 border-slate-200 opacity-60'
-                                            : task.status === 'in-progress'
-                                                ? 'bg-blue-50 border-blue-200 shadow-sm'
-                                                : 'bg-white border-slate-200 hover:border-purple-300 shadow-sm'
+                                        ? 'bg-slate-50 border-slate-200 opacity-60'
+                                        : task.status === 'in-progress'
+                                            ? 'bg-blue-50 border-blue-200 shadow-sm'
+                                            : 'bg-white border-slate-200 hover:border-purple-300 shadow-sm'
                                         }`}
                                 >
                                     <div className="flex items-start justify-between gap-2 mb-2">
@@ -88,14 +77,14 @@ function DecentralisedTeam({
                                     </div>
                                     <div className="flex items-center justify-between mt-2">
                                         <span className={`text-xs px-2 py-0.5 rounded-full ${task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                                                task.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
-                                                    'bg-slate-100 text-slate-600'
+                                            task.priority === 'medium' ? 'bg-amber-100 text-amber-700' :
+                                                'bg-slate-100 text-slate-600'
                                             }`}>
                                             {task.priority || 'Normal'}
                                         </span>
                                         {task.assigneeId && (
-                                            <span className="text-xs text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
-                                                Assigned
+                                            <span className="text-xs text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200 max-w-[120px] truncate block">
+                                                {agents.find(a => a.id === task.assigneeId)?.data?.agentPath?.slice(-1)?.[0] || 'Assigned'}
                                             </span>
                                         )}
                                     </div>
@@ -118,7 +107,7 @@ function DecentralisedTeam({
                     ) : (
                         <div className="flex flex-wrap gap-6 items-start content-start">
                             {agents.map((node) => {
-                                const isActive = activeAgentId === node.id;
+                                const isActive = activeAgentId === node.id || (Array.isArray(activeAgentId) && activeAgentId.includes(node.id));
                                 const agentPath = node.data?.agentPath || [];
                                 const agentName = agentPath.length > 0
                                     ? agentPath[agentPath.length - 1]

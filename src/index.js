@@ -102,8 +102,12 @@ import DecentralisedTeam from "./components/DecentralisedTeam";
  *     { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Report Agent'] } }
  *   ]);
  * 
+ *   const [isSimulationStarted, setIsSimulationStarted] = useState(false);
+ * 
  *   // Simulation of agents picking up tasks and completing them
  *   useEffect(() => {
+ *     if (!isSimulationStarted) return;
+ * 
  *     const interval = setInterval(() => {
  *       setTaskQueue(currentQueue => {
  *         const newQueue = [...currentQueue];
@@ -131,19 +135,37 @@ import DecentralisedTeam from "./components/DecentralisedTeam";
  *       });
  *     }, 3000); // Process every 3 seconds
  *     return () => clearInterval(interval);
- *   }, [agents]);
+ *   }, [agents, isSimulationStarted]);
  * 
  *   // Active agent could be the one working on the most recently started task
  *   const activeTask = taskQueue.find(t => t.status === 'in-progress');
  *   const activeAgentId = activeTask ? activeTask.assigneeId : null;
  * 
  *   return (
- *     <div style={{ height: '600px' }}>
- *       <DecentralisedTeam 
- *         agents={agents} 
- *         taskQueue={taskQueue} 
- *         activeAgentId={activeAgentId}
- *       />
+ *     <div style={{ height: '600px', display: 'flex', flexDirection: 'column' }}>
+ *       <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '8px' }}>
+ *         <button 
+ *           onClick={() => setIsSimulationStarted(!isSimulationStarted)}
+ *           style={{
+ *             padding: '12px 24px',
+ *             backgroundColor: isSimulationStarted ? '#ef4444' : '#0ea5e9',
+ *             color: 'white',
+ *             border: 'none',
+ *             borderRadius: '6px',
+ *             cursor: 'pointer',
+ *             fontWeight: '600'
+ *           }}
+ *         >
+ *           {isSimulationStarted ? 'Stop Simulation' : 'Start Simulation'}
+ *         </button>
+ *       </div>
+ *       <div style={{ flex: 1, position: 'relative' }}>
+ *         <DecentralisedTeam 
+ *           agents={agents} 
+ *           taskQueue={taskQueue} 
+ *           activeAgentId={activeAgentId}
+ *         />
+ *       </div>
  *     </div>
  *   );
  * }
