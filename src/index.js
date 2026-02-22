@@ -99,9 +99,9 @@ import DecentralisedTeam from "./components/DecentralisedTeam";
  *   const [taskQueue, setTaskQueue] = useState(getInitialTaskQueue());
  * 
  *   const [agents] = useState([
- *     { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Research Agent'] } },
- *     { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Risk Agent'] } },
- *     { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Report Agent'] } }
+ *     { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Market Trends'] } },
+ *     { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Risk Agent'] } },
+ *     { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Report Agent'] } }
  *   ]);
  * 
  *   const [isSimulationStarted, setIsSimulationStarted] = useState(false);

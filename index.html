@@ -463,6 +463,7 @@ Combining all branch outputs into cohesive social content:
             const [isKnowledgeGraphLoaded, setIsKnowledgeGraphLoaded] = React.useState(false);
             const [isDecentralisedLoaded, setIsDecentralisedLoaded] = React.useState(false);
             const [isDecentralisedSimulationStarted, setIsDecentralisedSimulationStarted] = React.useState(false);
+            const [hasDecentralisedSimulationRun, setHasDecentralisedSimulationRun] = React.useState(false);
             const [viewingAgent, setViewingAgent] = React.useState(null);
 
             const handleViewAgent = ({ agentPath }) => {
@@ -502,14 +503,15 @@ Combining all branch outputs into cohesive social content:
             const toggleDecentralisedSimulation = () => {
                 if (!isDecentralisedSimulationStarted) {
                     setTaskQueue(getInitialTaskQueue());
+                    setHasDecentralisedSimulationRun(true);
                 }
                 setIsDecentralisedSimulationStarted(!isDecentralisedSimulationStarted);
             };
 
             const [agents] = React.useState([
-                { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Research Agent'] } },
-                { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Risk Agent'] } },
-                { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Report Agent'] } }
+                { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Market Trends'] } },
+                { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Risk Agent'] } },
+                { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Report Agent'] } }
             ]);
 
             React.useEffect(() => {
@@ -547,6 +549,12 @@ Combining all branch outputs into cohesive social content:
 
                 return () => clearInterval(interval);
             }, [agents, isDecentralisedLoaded, isDecentralisedSimulationStarted]);
+
+            React.useEffect(() => {
+                if (isDecentralisedSimulationStarted && taskQueue.length > 0 && taskQueue.every(t => t.status === 'completed')) {
+                    setIsDecentralisedSimulationStarted(false);
+                }
+            }, [taskQueue, isDecentralisedSimulationStarted]);
 
             const activeTasks = taskQueue.filter(t => t.status === 'in-progress');
             const activeAgentIds = activeTasks.map(t => t.assigneeId);
@@ -848,7 +856,7 @@ Combining all branch outputs into cohesive social content:
                                 transition: 'all 0.2s',
                                 marginRight: '8px'
                             }
-                        }, isDecentralisedSimulationStarted ? 'Stop Simulation' : 'Start Simulation')
+                        }, isDecentralisedSimulationStarted ? 'Stop Simulation' : (hasDecentralisedSimulationRun ? 'Restart Simulation' : 'Start Simulation'))
                     ),
                     React.createElement('div', {
                         style: {
