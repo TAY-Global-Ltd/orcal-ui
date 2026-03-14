@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
+import AgentNode from './AgentNode';
 import "../tailwind.css";
 import { Settings, X, Plus, Play, Trash2, ChevronRight, ChevronDown, Check, Users, Save, Pencil, Home, AlertTriangle, Eye, Edit, Send, RotateCcw } from 'lucide-react';
 
@@ -34,7 +35,7 @@ const markdownComponents = {
     ul: ({ children }) => <ul className="list-disc list-inside my-2 space-y-1">{children}</ul>,
     ol: ({ children }) => <ol className="list-decimal list-inside my-2 space-y-1">{children}</ol>,
     li: ({ children }) => <li className="ml-2">{children}</li>,
-    code: ({ inline, children }) => 
+    code: ({ inline, children }) =>
         inline ? (
             <code className="bg-slate-200 text-slate-800 px-1 py-0.5 rounded text-xs font-mono">{children}</code>
         ) : (
@@ -59,23 +60,23 @@ const getEdgePath = (sourceX, sourceY, targetX, targetY) => {
 const isGraphConnected = (nodes, edges) => {
     if (nodes.length === 0) return true;
     if (nodes.length === 1) return true;
-    
+
     // Build adjacency list (undirected for connectivity check)
     const adjList = {};
     nodes.forEach(node => {
         adjList[node.id] = [];
     });
-    
+
     edges.forEach(edge => {
         adjList[edge.source].push(edge.target);
         adjList[edge.target].push(edge.source); // Make it undirected for connectivity
     });
-    
+
     // BFS to check connectivity
     const visited = new Set();
     const queue = [nodes[0].id];
     visited.add(nodes[0].id);
-    
+
     while (queue.length > 0) {
         const current = queue.shift();
         adjList[current].forEach(neighbor => {
@@ -85,7 +86,7 @@ const isGraphConnected = (nodes, edges) => {
             }
         });
     }
-    
+
     return visited.size === nodes.length;
 };
 
@@ -95,7 +96,7 @@ const findRootNodes = (nodes, edges) => {
     edges.forEach(edge => {
         hasIncomingEdge.add(edge.target);
     });
-    
+
     return nodes.filter(node => !hasIncomingEdge.has(node.id));
 };
 
@@ -105,88 +106,6 @@ const isGraphValid = (nodes, edges) => {
     const connected = isGraphConnected(nodes, edges);
     const rootNodes = findRootNodes(nodes, edges);
     return connected && rootNodes.length === 1;
-};
-
-/**
- * COMPONENT: Agent Selector (Dropdown/Modal)
- * Handles the tree navigation logic.
- */
-const AgentSelector = ({ value, onChange, onClose, agentTree }) => {
-    const [path, setPath] = useState([]); // Array of keys selected so far
-
-    // Current level of the tree based on path
-    let currentOptions = agentTree;
-    path.forEach(key => {
-        if (currentOptions[key]) currentOptions = currentOptions[key];
-    });
-
-    const isLeaf = Array.isArray(currentOptions);
-
-    const handleSelect = ({ key }) => {
-        if (isLeaf) {
-            // It's an agent selection
-            onChange({ path: [...path, key] });
-            onClose();
-        } else {
-            // Go deeper
-            setPath([...path, key]);
-        }
-    };
-
-    const goBack = () => {
-        setPath(path.slice(0, -1));
-    };
-
-    return (
-        <div
-            className="absolute top-full left-0 mt-[8px] bg-white rounded-[8px] shadow-xl border border-slate-200 z-50 animate-in fade-in zoom-in-95 duration-100"
-            style={{ width: '256px' }}
-        >
-            <div className="p-[8px] bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                {path.length > 0 ? (
-                    <button onClick={goBack} className="text-[12px] font-medium text-blue-500 hover:text-blue-600 flex items-center">
-                        &larr; Back
-                    </button>
-                ) : (
-                    <span className="text-[12px] font-semibold text-slate-500 uppercase tracking-wider">Select Source</span>
-                )}
-                <button onClick={onClose} className="text-slate-400 hover:text-red-500"><X size={14} /></button>
-            </div>
-
-            <div className="max-h-[240px] overflow-y-auto p-[4px] bg-white text-slate-900">
-                {isLeaf ? (
-                    currentOptions.map((agent) => (
-                        <button
-                            key={agent}
-                            onClick={() => handleSelect({ key: agent })}
-                            className="w-full text-left px-[12px] py-[8px] text-[14px] text-slate-700 hover:bg-blue-50 rounded flex items-center gap-[8px]"
-                        >
-                            <div className="w-[8px] h-[8px] rounded-full bg-green-500"></div>
-                            {agent}
-                        </button>
-                    ))
-                ) : (
-                    Object.keys(currentOptions).map((key) => (
-                        <button
-                            key={key}
-                            onClick={() => handleSelect({ key })}
-                            className="w-full text-left px-[12px] py-[8px] text-[14px] text-slate-700 hover:bg-slate-100 rounded flex items-center justify-between group"
-                        >
-                            <div className="flex items-center gap-[8px]">
-                                {path.length === 0 ? (key === 'Shared' ? '🌍' : '🔒') : '📁'}
-                                <span>{key}</span>
-                            </div>
-                            <ChevronRight size={14} className="text-slate-400 group-hover:text-slate-600" />
-                        </button>
-                    ))
-                )}
-                {/* Fallback check */}
-                {!isLeaf && Object.keys(currentOptions).length === 0 && (
-                    <div className="p-2 text-slate-400 text-xs text-center italic">No items found</div>
-                )}
-            </div>
-        </div>
-    );
 };
 
 /**
@@ -201,24 +120,24 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
     const [displayMessage, setDisplayMessage] = useState(null);
     const prevMessageTextRef = useRef(null);
     const bubbleRef = useRef(null);
-    
+
     // Normalize currentMessage: support both string (legacy) and object formats
-    const normalizedMessage = typeof currentMessage === 'string' 
+    const normalizedMessage = typeof currentMessage === 'string'
         ? { node: activeNode, message: currentMessage }
         : currentMessage;
-    
+
     // Extract node and message from normalized message object
     const messageNode = normalizedMessage?.node;
     const messageText = normalizedMessage?.message;
-    
+
     // Find the node to display the message on
     const targetNodeData = nodes.find(node => messageNode === node.data.agentPath.join('/'));
-    
+
     useEffect(() => {
         const prevMessageText = prevMessageTextRef.current;
         const hasMessage = !!messageText;
         const hadMessage = !!prevMessageText;
-        
+
         if (!hasMessage && !hadMessage) {
             // No message before or after
             setAnimationState('hidden');
@@ -256,41 +175,41 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
                 setAnimationState('visible');
             }
         }
-        
+
         prevMessageTextRef.current = messageText;
     }, [normalizedMessage, messageNode, messageText]);
-    
+
     if (!messageNode || !displayMessage?.message || animationState === 'hidden') return null;
     if (!targetNodeData) return null;
-    
+
     const nodeHeight = nodeHeights[targetNodeData.id] || 88;
     const bubbleWidth = 640; // Doubled from 320
     const bubbleHeight = 280;
     const nodeWidth = 256; // Node width is 256px
-    
+
     // Position bubble below the target node, aligned with left edge
     const bubbleX = targetNodeData.x; // Align left edges
     const bubbleY = targetNodeData.y + nodeHeight + 20; // Below node with gap
-    
+
     // Triangle position: middle of node (128px from node's left edge, which is bubble's left edge)
     const triangleLeft = nodeWidth / 2; // 128px - middle of node
-    
+
     // Calculate scale origin from node center (for shrink animation)
     const nodeCenterX = targetNodeData.x + nodeWidth / 2;
     const nodeCenterY = targetNodeData.y + nodeHeight / 2;
     // Transform origin relative to the bubble element (0-100%)
     const originX = ((nodeCenterX - bubbleX) / bubbleWidth) * 100;
     const originY = ((nodeCenterY - bubbleY) / bubbleHeight) * 100;
-    
+
     // Calculate the offset needed to shrink toward node center
     // When scaling to 0 at the origin point, we need to translate so the origin point moves to node center
     const offsetX = nodeCenterX - bubbleX;
     const offsetY = nodeCenterY - bubbleY;
-    
+
     // Get animation style based on state
     let animationStyle = {};
     let baseTransform = `translate(${bubbleX}px, ${bubbleY}px)`;
-    
+
     if (animationState === 'appearing') {
         animationStyle = {
             animation: `popOut-${bubbleX}-${bubbleY} 0.4s ease-out forwards`,
@@ -300,7 +219,7 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
             animation: `shrinkIn-${bubbleX}-${bubbleY}-${nodeCenterX}-${nodeCenterY} 0.3s ease-in forwards`,
         };
     }
-    
+
     return (
         <>
             {/* Add keyframes via style tag */}
@@ -356,7 +275,7 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
                         filter: 'drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1))',
                     }}
                 />
-                
+
                 {/* Speech bubble content */}
                 <div
                     className="bg-white rounded-2xl shadow-xl border-slate-300 overflow-hidden pointer-events-auto"
@@ -384,17 +303,17 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
 /**
  * MAIN APP COMPONENT
  */
-function TeamBuilder({ 
-    agentTree = AGENT_TREE, 
-    activeNode, 
-    initialNodes = [], 
-    initialEdges = [], 
-    handleSave, 
-    handleView, 
-    handleEdit, 
-    initialEditable = false, 
-    currentMessage, 
-    handlePrompt, 
+function TeamBuilder({
+    agentTree = AGENT_TREE,
+    activeNode,
+    initialNodes = [],
+    initialEdges = [],
+    handleSave,
+    handleView,
+    handleEdit,
+    initialEditable = false,
+    currentMessage,
+    handlePrompt,
     isFollowingActive: shouldFollow,
     showPrompt = !activeNode
 }) {
@@ -471,47 +390,47 @@ function TeamBuilder({
     // --- Pan to Active Node ---
     const panToActiveNode = useCallback(() => {
         if (!activeNode || !containerRef.current) return;
-        
+
         const activeNodeData = nodes.find(node => activeNode === node.data.agentPath.join('/'));
         if (!activeNodeData) return;
-        
+
         const nodeHeight = nodeHeights[activeNodeData.id] || 88;
         const nodeWidth = 256;
         const bubbleHeight = 280;
         const containerWidth = containerRef.current.clientWidth;
         const containerHeight = containerRef.current.clientHeight;
-        
+
         // Calculate target position: node should be in upper-middle area
         // Leave space below for the speech bubble
         const targetNodeCenterX = containerWidth / 2;
         const targetNodeCenterY = containerHeight * 0.3; // Position at 30% from top instead of 50%
-        
+
         // Calculate required pan to move node center to target position
         const targetPanX = targetNodeCenterX - (activeNodeData.x + nodeWidth / 2);
         const targetPanY = targetNodeCenterY - (activeNodeData.y + nodeHeight / 2);
-        
+
         // Smooth animation - use ref to get current pan value
         const startPan = { ...panRef.current };
         const startTime = performance.now();
         const duration = 600; // 600ms animation
-        
+
         // Mark that we're doing an automatic pan
         isAutoPanningRef.current = true;
-        
+
         const animate = (currentTime) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            
+
             // Easing function (ease-out cubic)
             const eased = 1 - Math.pow(1 - progress, 3);
-            
+
             const newPan = {
                 x: startPan.x + (targetPanX - startPan.x) * eased,
                 y: startPan.y + (targetPanY - startPan.y) * eased
             };
-            
+
             setPan(newPan);
-            
+
             if (progress < 1) {
                 animationFrameRef.current = requestAnimationFrame(animate);
             } else {
@@ -519,7 +438,7 @@ function TeamBuilder({
                 isAutoPanningRef.current = false;
             }
         };
-        
+
         if (animationFrameRef.current) {
             cancelAnimationFrame(animationFrameRef.current);
         }
@@ -547,7 +466,7 @@ function TeamBuilder({
     useEffect(() => {
         // Check if we have node heights measured (object has keys)
         const hasNodeHeights = Object.keys(nodeHeights).length > 0;
-        
+
         if (isFollowingActive && activeNode && hasNodeHeights && !initialPanDoneRef.current) {
             // Mark that we've done the initial pan
             initialPanDoneRef.current = true;
@@ -707,8 +626,8 @@ function TeamBuilder({
         if (type === 'source') {
             const node = nodes.find(n => n.id === nodeId);
             const nodeHeight = nodeHeights[nodeId] || 88; // fallback to approximate height
-            setConnectingSource({ 
-                nodeId, 
+            setConnectingSource({
+                nodeId,
                 x: node.x + 256, // Right edge of node
                 y: node.y + nodeHeight / 2 // Actual center Y
             });
@@ -781,11 +700,10 @@ function TeamBuilder({
                         activeNode ? (
                             <button
                                 onClick={() => setIsFollowingActive(!isFollowingActive)}
-                                className={`flex items-center gap-[8px] px-[16px] py-[8px] rounded-[6px] text-[14px] font-medium transition-colors shadow-sm ${
-                                    isFollowingActive 
-                                        ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                className={`flex items-center gap-[8px] px-[16px] py-[8px] rounded-[6px] text-[14px] font-medium transition-colors shadow-sm ${isFollowingActive
+                                        ? 'bg-green-500 hover:bg-green-600 text-white'
                                         : 'bg-blue-500 hover:bg-blue-600 text-white'
-                                }`}
+                                    }`}
                             >
                                 {isFollowingActive ? <Check size={16} /> : <Play size={16} />}
                                 Follow Active Agent
@@ -880,7 +798,7 @@ function TeamBuilder({
                             // Calculate handle positions based on actual node heights
                             const srcHeight = nodeHeights[edge.source] || 88; // fallback to approximate height
                             const trgHeight = nodeHeights[edge.target] || 88;
-                            
+
                             const sx = src.x + 256; // Width of node is w-64 (256px)
                             const sy = src.y + srcHeight / 2;  // Actual center Y
                             const tx = trg.x;
@@ -941,124 +859,34 @@ function TeamBuilder({
                                 : 'Select Agent...';
 
                             const breadcrumbs = node.data.agentPath.slice(0, -1).join(' > ');
-                            
+
                             // Check if this is a root node (only show icon if graph is valid)
                             const rootNodes = findRootNodes(nodes, edges);
                             const graphValid = isGraphValid(nodes, edges);
                             const isRootNode = graphValid && rootNodes.length === 1 && rootNodes[0].id === node.id;
 
                             return (
-                                <div
-                                    ref={el => nodeRefs.current[node.id] = el}
-                                    data-node="true"
+                                <AgentNode
                                     key={node.id}
-                                    onMouseDown={(e) => onNodeDragStart({ event: e, node })}
+                                    node={node}
+                                    isActive={isActive}
+                                    isRootNode={isRootNode}
+                                    isEditing={isEditing}
+                                    agentName={agentName}
+                                    breadcrumbs={breadcrumbs}
+                                    agentTree={agentTree}
+                                    openSelectorId={openSelectorId}
+                                    setOpenSelectorId={setOpenSelectorId}
+                                    updateAgent={updateAgent}
+                                    handleView={handleView}
+                                    handleEdit={handleEdit}
+                                    deleteNode={deleteNode}
+                                    onNodeDragStart={onNodeDragStart}
+                                    nodeRef={el => nodeRefs.current[node.id] = el}
                                     style={{
-                                        transform: `translate(${node.x}px, ${node.y}px)`,
-                                        width: '256px',
-                                        height: 'fit-content',
-                                        boxSizing: 'border-box',
-                                        fontSize: '14px',
-                                        lineHeight: '1.5',
-                                        fontFamily: 'sans-serif'
+                                        transform: `translate(${node.x}px, ${node.y}px)`
                                     }}
-                                    className={`absolute bg-white rounded-[12px] shadow-lg border-2 transition-shadow duration-200 group flex flex-col ${openSelectorId === node.id ? 'z-50' : 'z-10'}
-                                        ${isActive
-                                            ? 'border-green-500 shadow-green-500/30 ring-1 ring-green-500'
-                                            : 'border-blue-500 hover:border-blue-600'
-                                        }
-                                    `}
                                 >
-                                    {/* Active Indicator / Header */}
-                                    <div
-                                        className={`rounded-t-[12px] w-full ${isActive ? 'bg-green-500' : 'bg-slate-100'}`}
-                                        style={{ height: '8px' }}
-                                    ></div>
-
-                                    <div className="flex flex-col" style={{ padding: '16px', gap: '12px' }}>
-
-                                        {/* Header Row */}
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex flex-col">
-                                                {breadcrumbs && (
-                                                    <span className="text-slate-400 truncate max-w-[150px]" title={breadcrumbs} style={{ fontSize: '10px' }}>{breadcrumbs}</span>
-                                                )}
-                                            </div>
-
-                                            <div className="flex gap-[4px]">
-                                                {/* View/Edit Icon */}
-                                                {!isEditing ? (
-                                                    handleView && node.data.agentPath.length > 0 && (
-                                                        <button
-                                                            onClick={() => handleView({ agentPath: node.data.agentPath.join('/') })}
-                                                            className="p-[6px] rounded-[6px] text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                                                            title="View Agent"
-                                                        >
-                                                            <Eye size={16} />
-                                                        </button>
-                                                    )
-                                                ) : (
-                                                    handleEdit && node.data.agentPath.length > 0 && (
-                                                        <button
-                                                            onClick={() => handleEdit({ agentPath: node.data.agentPath.join('/') })}
-                                                            className="p-[6px] rounded-[6px] text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
-                                                            title="Edit Agent"
-                                                        >
-                                                            <Edit size={16} />
-                                                        </button>
-                                                    )
-                                                )}
-                                                {/* Root Node Indicator */}
-                                                {isRootNode && (
-                                                    <div
-                                                        className="p-[6px] rounded-[6px] transition-all text-indigo-600 bg-indigo-50"
-                                                        title="Root Node"
-                                                    >
-                                                        <Home size={18} />
-                                                    </div>
-                                                )}
-                                                {/* Active Toggle */}
-                                                {isActive && (
-                                                    <div
-                                                        className="p-[6px] rounded-[6px] transition-all text-green-600 bg-green-50"
-                                                        title="Active Node"
-                                                    >
-                                                        <Settings size={18} className="animate-spin" />
-                                                    </div>
-                                                )}
-                                                {isEditing && (
-                                                    <button
-                                                        onClick={() => deleteNode({ id: node.id })}
-                                                        className="p-[6px] rounded-[6px] text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Agent Selector Dropdown */}
-                                        <div className="relative nodrag">
-                                            <button
-                                                onClick={() => setOpenSelectorId(openSelectorId === node.id ? null : node.id)}
-                                                className="w-full flex items-center justify-between px-[12px] py-[8px] bg-slate-50 border border-slate-200 rounded-[6px] text-[14px] text-slate-600 hover:bg-slate-100 transition-colors"
-                                            >
-                                                <span>{agentName}</span>
-                                                <ChevronDown size={14} />
-                                            </button>
-
-                                            {openSelectorId === node.id && isEditing && (
-                                                <AgentSelector
-                                                    value={node.data.agentPath}
-                                                    onChange={({ path }) => updateAgent({ nodeId: node.id, path })}
-                                                    onClose={() => setOpenSelectorId(null)}
-                                                    agentTree={agentTree}
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Handles */}
                                     {/* Input Handle */}
                                     {isEditing && (
                                         <div
@@ -1108,20 +936,19 @@ function TeamBuilder({
                                             />
                                         </div>
                                     )}
-
-                                </div>
+                                </AgentNode>
                             );
                         })}
                     </div>
-                
+
                     {/* Prompt Box */}
                     {!isEditing && handlePrompt && showPrompt && !activeNode && (
-                        <div 
+                        <div
                             className="absolute w-full max-w-2xl px-4 z-30 pointer-events-none"
-                            style={{ 
-                                bottom: '24px', 
-                                left: '50%', 
-                                transform: 'translateX(-50%)' 
+                            style={{
+                                bottom: '24px',
+                                left: '50%',
+                                transform: 'translateX(-50%)'
                             }}
                         >
                             <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-2 flex items-end gap-2 pointer-events-auto">
@@ -1141,11 +968,10 @@ function TeamBuilder({
                                 <button
                                     onClick={handleSendPrompt}
                                     disabled={!promptInput.trim()}
-                                    className={`p-2 rounded-xl mb-1 transition-colors ${
-                                        promptInput.trim() 
-                                            ? 'bg-slate-900 text-white hover:bg-slate-700' 
+                                    className={`p-2 rounded-xl mb-1 transition-colors ${promptInput.trim()
+                                            ? 'bg-slate-900 text-white hover:bg-slate-700'
                                             : 'bg-slate-100 text-slate-300'
-                                    }`}
+                                        }`}
                                     style={promptInput.trim() ? { color: 'white' } : {}}
                                 >
                                     <Send size={18} />
@@ -1164,7 +990,7 @@ function TeamBuilder({
                         <div className="flex items-center gap-1 text-amber-600">
                             <AlertTriangle size={14} />
                             <span>
-                                {!isGraphConnected(nodes, edges) 
+                                {!isGraphConnected(nodes, edges)
                                     ? 'Warning: Not all nodes are connected'
                                     : findRootNodes(nodes, edges).length !== 1
                                         ? `Warning: Graph must have exactly 1 root node (found ${findRootNodes(nodes, edges).length})`

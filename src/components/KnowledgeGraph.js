@@ -16,23 +16,19 @@ import {
     Move
 } from 'lucide-react';
 
-
-const CATEGORY_COLORS = {
-    root: '#7c3aed',
-    history: '#2563eb',
-    tech: '#0891b2',
-    training: '#059669',
-    feature: '#d97706',
-    safety: '#dc2626',
-};
-
-const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
+const KnowledgeGraph = ({
+    data,
+    title = "Wikipedia LLM Explorer",
+    categoryColors
+}) => {
     const [selectedNodeId, setSelectedNodeId] = useState(data?.id);
     const [expandedNodes, setExpandedNodes] = useState(new Set([data?.id]));
     const [zoom, setZoom] = useState(1);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [shouldAnimate, setShouldAnimate] = useState(true);
+    const hasCategoryColors = !!(categoryColors && Object.keys(categoryColors).length > 0);
+    const getCategoryColor = (category) => (hasCategoryColors ? categoryColors?.[category] : undefined);
 
     const canvasRef = useRef(null);
     const lastMousePos = useRef({ x: 0, y: 0 });
@@ -135,7 +131,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
 
     return (
         <div
-            className="flex h-screen w-full bg-zinc-50 text-zinc-900 font-sans overflow-hidden transition-colors duration-500"
+            className="flex h-full w-full bg-zinc-50 text-zinc-900 font-sans overflow-hidden transition-colors duration-500"
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
@@ -162,9 +158,9 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                                 <span
                                     className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-widest border"
                                     style={{
-                                        backgroundColor: `${CATEGORY_COLORS[selectedNode.category]}10`,
-                                        color: CATEGORY_COLORS[selectedNode.category],
-                                        borderColor: `${CATEGORY_COLORS[selectedNode.category]}20`
+                                        backgroundColor: getCategoryColor(selectedNode.category) ? `${getCategoryColor(selectedNode.category)}10` : 'transparent',
+                                        color: getCategoryColor(selectedNode.category) || '#18181b',
+                                        borderColor: getCategoryColor(selectedNode.category) ? `${getCategoryColor(selectedNode.category)}20` : '#d4d4d8'
                                     }}
                                 >
                                     {selectedNode.category}
@@ -200,7 +196,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                                                 className="group flex items-center justify-between p-4 rounded-xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-100 hover:border-zinc-200 transition-all duration-300"
                                             >
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[child.category] }} />
+                                                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getCategoryColor(child.category) || '#18181b' }} />
                                                     <span className="text-sm font-semibold text-zinc-700 group-hover:text-zinc-900 transition-colors">{child.label}</span>
                                                 </div>
                                                 <Plus size={14} className="text-zinc-300 group-hover:text-zinc-500 transition-transform group-hover:rotate-90 w-3.5 h-3.5" />
@@ -235,7 +231,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
 
                 {/* The Graph Layer */}
                 <div
-                    className={`absolute inset-0 ${shouldAnimate ? 'transition-transform duration-700 ease-in-out' : ''}`}
+                    className={`absolute inset-0 pointer-events-none ${shouldAnimate ? 'transition-transform duration-700 ease-in-out' : ''}`}
                     style={{
                         transform: `scale(${zoom}) translate(calc(50% + ${offset.x}px), calc(50% + ${offset.y}px))`,
                         transformOrigin: '0 0'
@@ -251,8 +247,8 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                                     key={`line-${node.id}`}
                                     x1={parent.x} y1={parent.y}
                                     x2={node.x} y2={node.y}
-                                    stroke={CATEGORY_COLORS[node.category]}
-                                    strokeWidth="1.5"
+                                    stroke={getCategoryColor(node.category) || '#d4d4d8'}
+                                    strokeWidth="2.5"
                                     strokeOpacity="0.15"
                                     strokeDasharray="4 4"
                                 />
@@ -272,6 +268,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                         absolute cursor-pointer transition-all duration-300 ease-out
                         flex items-center justify-center rounded-full border-2 
                         group hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+                        pointer-events-auto
                         ${selectedNodeId === node.id ? 'z-20 scale-110 shadow-xl' : 'scale-100 z-10'}
                     `}
                             style={{
@@ -280,14 +277,16 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                                 left: node.x,
                                 top: node.y,
                                 transform: 'translate(-50%, -50%)',
-                                backgroundColor: selectedNodeId === node.id ? CATEGORY_COLORS[node.category] : 'white',
-                                borderColor: selectedNodeId === node.id ? 'transparent' : `${CATEGORY_COLORS[node.category]}40`,
+                                backgroundColor: selectedNodeId === node.id && getCategoryColor(node.category) ? getCategoryColor(node.category) : 'white',
+                                borderColor: selectedNodeId === node.id
+                                    ? (getCategoryColor(node.category) ? 'transparent' : '#111827')
+                                    : (getCategoryColor(node.category) ? `${getCategoryColor(node.category)}40` : '#d4d4d8'),
                             }}
                         >
                             <div className="flex flex-col items-center p-3 text-center">
                                 <span className={`
                             text-[11px] md:text-xs font-bold leading-tight
-                            ${selectedNodeId === node.id ? 'text-white' : 'text-zinc-700 group-hover:text-zinc-900'}
+                            ${selectedNodeId === node.id && getCategoryColor(node.category) ? 'text-white' : 'text-zinc-700 group-hover:text-zinc-900'}
                         `}>
                                     {node.label}
                                 </span>
@@ -295,7 +294,7 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                                 {node.children && (
                                     <div className={`
                                 mt-1.5 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter
-                                ${selectedNodeId === node.id ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-400 group-hover:bg-zinc-200'}
+                                ${selectedNodeId === node.id && getCategoryColor(node.category) ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-400 group-hover:bg-zinc-200'}
                             `}>
                                         {expandedNodes.has(node.id) ? 'Collapse' : `+${node.children.length}`}
                                     </div>
@@ -342,17 +341,19 @@ const KnowledgeGraph = ({ data, title = "Wikipedia LLM Explorer" }) => {
                         </button>
                     </div>
 
-                    <div className="bg-white/90 backdrop-blur-md border border-zinc-200 rounded-2xl p-4 shadow-lg shadow-zinc-200/50">
-                        <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Key</h4>
-                        <div className="space-y-2">
-                            {Object.entries(CATEGORY_COLORS).map(([cat, color]) => (
-                                <div key={cat} className="flex items-center gap-3">
-                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                                    <span className="text-[11px] font-bold text-zinc-500 capitalize">{cat}</span>
-                                </div>
-                            ))}
+                    {hasCategoryColors && (
+                        <div className="bg-white/90 backdrop-blur-md border border-zinc-200 rounded-2xl p-4 shadow-lg shadow-zinc-200/50">
+                            <h4 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Key</h4>
+                            <div className="space-y-2">
+                                {Object.entries(categoryColors).map(([cat, color]) => (
+                                    <div key={cat} className="flex items-center gap-3">
+                                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                                        <span className="text-[11px] font-bold text-zinc-500 capitalize">{cat}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Top Hint */}
