@@ -188,6 +188,15 @@
             ]
         };
 
+        const KNOWLEDGE_GRAPH_CATEGORY_COLORS = {
+            root: '#7c3aed',
+            history: '#2563eb',
+            tech: '#0891b2',
+            training: '#059669',
+            feature: '#d97706',
+            safety: '#dc2626',
+        };
+
         const demoNodes = [
             // Start: Research (far left)
             { id: '1', x: 50, y: 300, data: { label: 'Research', agentPath: ['Shared', 'Data Analysis', 'Market Trends'] } },
@@ -437,6 +446,7 @@ Combining all branch outputs into cohesive social content:
         // Create components once (not inside render) to maintain stable references
         const TeamBuilderComponent = TeamBuilder({ withBindings });
         const KnowledgeGraphComponent = KnowledgeGraph({ withBindings });
+        const DecentralisedTeamComponent = components.v1.DecentralisedTeam({ withBindings });
 
         // Lazy loaded wrapper for KnowledgeGraph
         // Since we are in a single bundle, we simulate lazy loading by deferring render
@@ -451,6 +461,14 @@ Combining all branch outputs into cohesive social content:
         const App = () => {
             const [activeTab, setActiveTab] = React.useState('team-builder');
             const [isKnowledgeGraphLoaded, setIsKnowledgeGraphLoaded] = React.useState(false);
+            const [isDecentralisedLoaded, setIsDecentralisedLoaded] = React.useState(false);
+            const [isDecentralisedSimulationStarted, setIsDecentralisedSimulationStarted] = React.useState(false);
+            const [hasDecentralisedSimulationRun, setHasDecentralisedSimulationRun] = React.useState(false);
+            const [viewingAgent, setViewingAgent] = React.useState(null);
+
+            const handleViewAgent = ({ agentPath }) => {
+                setViewingAgent(agentPath);
+            };
 
             // TeamBuilder State
             const [activeNode, setActiveNode] = React.useState(null);
@@ -460,6 +478,100 @@ Combining all branch outputs into cohesive social content:
             const [isSimulationStarted, setIsSimulationStarted] = React.useState(false);
             const [showPrompt, setShowPrompt] = React.useState(false);
             const timersRef = React.useRef([]);
+
+            // DecentralisedTeam State (Demo Logic)
+            const AGENT_TREE_DEMO = {
+                Shared: {
+                    "Content Creation": ["Blog Writer", "Tweet Generator", "SEO Optimizer"],
+                    "Data Analysis": ["Market Trends", "Sentiment Analyzer", "Risk Agent", "Chart Builder"],
+                    "Utility": ["Translator", "Summarizer", "Report Agent", "Orchestrator"]
+                }
+            };
+
+            const [taskQueue, setTaskQueue] = React.useState([]);
+            const [agents, setAgents] = React.useState([]);
+            const [simulationPhase, setSimulationPhase] = React.useState(0);
+
+            const toggleDecentralisedSimulation = () => {
+                if (!isDecentralisedSimulationStarted) {
+                    setTaskQueue([]);
+                    setAgents([]);
+                    setSimulationPhase(0);
+                    setHasDecentralisedSimulationRun(true);
+                }
+                setIsDecentralisedSimulationStarted(!isDecentralisedSimulationStarted);
+            };
+
+            React.useEffect(() => {
+                if (!isDecentralisedLoaded || !isDecentralisedSimulationStarted) return;
+
+                const timer = setTimeout(() => {
+                    if (simulationPhase === 0) {
+                        setAgents([{ id: 'orchestrator', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Orchestrator'], colour: '#8b5cf6' } }]);
+                        setSimulationPhase(1);
+                    } else if (simulationPhase === 1) {
+                        setTaskQueue([
+                            { id: 't1', title: 'Research Commodity Market', status: 'pending', requiredAgent: 'research-agent' },
+                            { id: 't2', title: 'Research Equity Market', status: 'pending', requiredAgent: 'research-agent' },
+                            { id: 't3', title: 'Get position of the trader book', status: 'pending', requiredAgent: 'risk-agent' },
+                            { id: 't4', title: 'Run delta risk of the trader book', status: 'pending', requiredAgent: 'risk-agent' },
+                            { id: 't5', title: 'Run value at risk on the trader book', status: 'pending', requiredAgent: 'risk-agent' },
+                            { id: 't6', title: 'Create a PDF report', status: 'pending', requiredAgent: 'report-agent' },
+                            { id: 't7', title: 'Email the report', status: 'pending', requiredAgent: 'report-agent' }
+                        ]);
+                        setSimulationPhase(2);
+                    } else if (simulationPhase === 2) {
+                        setAgents(current => [
+                            ...current,
+                            { id: 'research-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Market Trends'], colour: '#3b82f6' } },
+                            { id: 'risk-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Data Analysis', 'Risk Agent'], colour: '#ef4444' } },
+                            { id: 'report-agent', x: 0, y: 0, data: { agentPath: ['Shared', 'Utility', 'Report Agent'], colour: '#10b981' } }
+                        ]);
+                        setSimulationPhase(3);
+                    } else if (simulationPhase >= 3) {
+                        setTaskQueue(currentQueue => {
+                            const newQueue = [...currentQueue];
+                            let madeChanges = false;
+
+                            // 1. Complete randomly 
+                            newQueue.forEach(t => {
+                                if (t.status === 'in-progress' && Math.random() > 0.4) {
+                                    t.status = 'completed';
+                                    madeChanges = true;
+                                }
+                            });
+
+                            // 2. Assign idle agents to pending tasks
+                            const busyAgentIds = newQueue.filter(t => t.status === 'in-progress').map(t => t.assigneeId);
+                            const idleAgents = agents.filter(a => !busyAgentIds.includes(a.id));
+
+                            idleAgents.forEach(agent => {
+                                const nextTask = newQueue.find(t => t.status === 'pending' && t.requiredAgent === agent.id);
+                                if (nextTask) {
+                                    nextTask.status = 'in-progress';
+                                    nextTask.assigneeId = agent.id;
+                                    madeChanges = true;
+                                }
+                            });
+
+                            return madeChanges ? newQueue : currentQueue;
+                        });
+                        setSimulationPhase(p => p + 1);
+                    }
+                }, 1500);
+
+                return () => clearTimeout(timer);
+            }, [agents, isDecentralisedLoaded, isDecentralisedSimulationStarted, simulationPhase]);
+
+            React.useEffect(() => {
+                if (isDecentralisedSimulationStarted && taskQueue.length > 0 && taskQueue.every(t => t.status === 'completed')) {
+                    setIsDecentralisedSimulationStarted(false);
+                }
+            }, [taskQueue, isDecentralisedSimulationStarted]);
+
+            const activeTasks = taskQueue.filter(t => t.status === 'in-progress');
+            const activeAgentIds = activeTasks.map(t => t.assigneeId);
+
 
             const startSimulation = () => {
                 // Reset to beginning
@@ -559,6 +671,9 @@ Combining all branch outputs into cohesive social content:
                 if (tab === 'knowledge-graph') {
                     setIsKnowledgeGraphLoaded(true);
                 }
+                if (tab === 'decentralised-team') {
+                    setIsDecentralisedLoaded(true);
+                }
             };
 
             return React.createElement('div', { className: 'container' },
@@ -589,7 +704,19 @@ Combining all branch outputs into cohesive social content:
                             fontWeight: '600',
                             cursor: 'pointer'
                         }
-                    }, 'Knowledge Graph')
+                    }, 'Knowledge Graph'),
+                    React.createElement('button', {
+                        onClick: () => handleTabChange('decentralised-team'),
+                        style: {
+                            padding: '10px 20px',
+                            backgroundColor: activeTab === 'decentralised-team' ? '#9333ea' : '#e2e8f0',
+                            color: activeTab === 'decentralised-team' ? 'white' : '#64748b',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                        }
+                    }, 'Decentralised Team')
                 ),
 
                 // Team Builder Content
@@ -658,6 +785,7 @@ Combining all branch outputs into cohesive social content:
                             currentMessage: currentMessage,
                             isFollowingActive: isSimulationStarted,
                             handlePrompt: showPrompt ? handlePrompt : undefined,
+                            handleView: handleViewAgent,
                             handleSave: ({ nodes, edges }) => {
                                 console.log("Saved Nodes:", nodes);
                                 console.log("Saved Edges:", edges);
@@ -702,10 +830,106 @@ Combining all branch outputs into cohesive social content:
                                 }
                             }, 'Loading Knowledge Graph...')
                         },
-                            React.createElement(LazyKnowledgeGraph, { data: KNOWLEDGE_TREE, title: "Wikipedia LLM Explorer" })
+                            React.createElement(LazyKnowledgeGraph, {
+                                data: KNOWLEDGE_TREE,
+                                title: "Wikipedia LLM Explorer",
+                                categoryColors: KNOWLEDGE_GRAPH_CATEGORY_COLORS
+                            })
                         )
                     )
+                ),
+
+                // Decentralised Team Content
+                activeTab === 'decentralised-team' && React.createElement('div', {
+                    className: 'component-section',
+                    style: {
+                        backgroundColor: '#faf5ff',
+                        borderColor: '#9333ea',
+                        padding: '16px',
+                        border: '1px solid #9333ea',
+                        borderRadius: '8px'
+                    }
+                },
+                    React.createElement('span', { className: 'component-label' }, 'Decentralised Team - Swarm Simulation'),
+                    React.createElement('p', { style: { marginBottom: '12px', fontSize: '14px', color: '#64748b' } },
+                        'A flexible queue-based agent team where nodes work independently and process tasks as they arrive.'
+                    ),
+                    React.createElement('div', { className: 'flex gap-2 mb-4' },
+                        React.createElement('button', {
+                            onClick: toggleDecentralisedSimulation,
+                            style: {
+                                padding: '12px 24px',
+                                backgroundColor: isDecentralisedSimulationStarted ? '#ef4444' : '#0ea5e9',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                marginRight: '8px'
+                            }
+                        }, isDecentralisedSimulationStarted ? 'Stop Simulation' : (hasDecentralisedSimulationRun ? 'Restart Simulation' : 'Start Simulation'))
+                    ),
+                    React.createElement('div', {
+                        style: {
+                            height: '600px',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            position: 'relative'
+                        }
+                    },
+                        React.createElement(DecentralisedTeamComponent, {
+                            teamName: "Market and Risk Reporting",
+                            agents: agents,
+                            taskQueue: taskQueue,
+                            activeAgentId: activeAgentIds,
+                            agentTree: AGENT_TREE_DEMO,
+                            onAgentView: handleViewAgent
+                        })
+                    )
+                ),
+
+                // Agent Detail Modal
+                viewingAgent && React.createElement('div', {
+                    style: {
+                        position: 'fixed',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000
+                    },
+                    onClick: () => setViewingAgent(null)
+                },
+                    React.createElement('div', {
+                        style: {
+                            backgroundColor: 'white',
+                            padding: '24px',
+                            borderRadius: '12px',
+                            width: '400px',
+                            maxWidth: '90%',
+                            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                        },
+                        onClick: e => e.stopPropagation()
+                    },
+                        React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
+                            React.createElement('h2', { style: { margin: 0, fontSize: '18px' } }, 'Agent Details'),
+                            React.createElement('button', {
+                                onClick: () => setViewingAgent(null),
+                                style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '20px', color: '#64748b' }
+                            }, '×')
+                        ),
+                        React.createElement('div', { style: { marginBottom: '16px' } },
+                            React.createElement('strong', null, 'Path: '),
+                            React.createElement('span', null, viewingAgent)
+                        ),
+                        React.createElement('p', { style: { color: '#64748b', fontSize: '14px' } }, 'This is a demo detail view for the selected agent.')
+                    )
                 )
+
             );
         };
 
