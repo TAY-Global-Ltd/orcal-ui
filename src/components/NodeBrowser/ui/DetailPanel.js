@@ -9,10 +9,10 @@ const Spinner = () => (
       style={{
         borderWidth: '3px',
         borderStyle: 'solid',
-        borderTopColor: '#38bdf8',
-        borderRightColor: '#475569',
-        borderBottomColor: '#475569',
-        borderLeftColor: '#475569',
+        borderTopColor: '#0284c7',
+        borderRightColor: '#cbd5e1',
+        borderBottomColor: '#cbd5e1',
+        borderLeftColor: '#cbd5e1',
         animation: 'spin 0.8s linear infinite',
       }}
     />
@@ -24,14 +24,14 @@ const NodeList = ({ nodes, pathColors, onClickNode }) => (
     {nodes.map((n) => (
       <div
         key={n.id}
-        className={`flex items-center gap-2 text-xs bg-slate-900/50 px-2 py-1 rounded font-mono${onClickNode ? ' cursor-pointer hover:bg-slate-700/50 transition-colors' : ''}`}
+        className={`flex items-center gap-2 text-xs bg-slate-100 px-2 py-1 rounded font-mono${onClickNode ? ' cursor-pointer hover:bg-slate-200 transition-colors' : ''}`}
         onClick={onClickNode ? () => onClickNode(n.id) : undefined}
       >
         <span
           className="w-2 h-2 rounded-full flex-shrink-0"
           style={{ backgroundColor: getPathColor(n.root || n.objectPath, pathColors) }}
         />
-        <span className="text-slate-300 truncate">{n.name}</span>
+        <span className="text-slate-700 truncate">{n.name}</span>
       </div>
     ))}
   </div>
@@ -43,7 +43,7 @@ export const ObjectDetailPanel = ({ object, pathColors, onClickNode }) => {
 
   return (
     <div
-      className="absolute z-50 bg-slate-800/95 backdrop-blur-md rounded-lg border border-slate-700 shadow-2xl overflow-hidden flex flex-col"
+      className="absolute z-50 bg-white/95 backdrop-blur-md rounded-lg border border-slate-200 shadow-2xl overflow-hidden flex flex-col"
       style={{
         right: 20,
         top: 20,
@@ -51,8 +51,8 @@ export const ObjectDetailPanel = ({ object, pathColors, onClickNode }) => {
         width: '360px',
       }}
     >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
-        <span className="text-sm font-semibold text-slate-200">Details</span>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+        <span className="text-sm font-semibold text-slate-800">Details</span>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
@@ -64,23 +64,23 @@ export const ObjectDetailPanel = ({ object, pathColors, onClickNode }) => {
             >
               {object.root || object.path?.split('/')[1]}
             </span>
-            <span className="text-xs text-slate-400 capitalize">Object</span>
+            <span className="text-xs text-slate-500 capitalize">Object</span>
           </div>
-          <h2 className="text-lg font-bold text-white break-words mt-2">
+          <h2 className="text-lg font-bold text-slate-900 break-words mt-2">
             {truncateObjectName(object.name)}
           </h2>
-          <div className="text-xs text-slate-400 font-mono break-all mt-1">{object.path}</div>
+          <div className="text-xs text-slate-500 font-mono break-all mt-1">{object.path}</div>
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
             Functions ({functions.length})
           </h3>
           <NodeList nodes={functions} pathColors={pathColors} onClickNode={onClickNode} />
         </div>
 
         {functions.length === 0 && (
-          <div className="text-xs text-slate-500 italic">No functions</div>
+          <div className="text-xs text-slate-400 italic">No functions</div>
         )}
       </div>
     </div>
@@ -109,7 +109,7 @@ export const DetailPanel = ({ node, data, loading, content, pathColors }) => {
 
   return (
     <div
-      className="absolute z-50 bg-slate-800/95 backdrop-blur-md rounded-lg border border-slate-700 shadow-2xl overflow-hidden flex flex-col"
+      className="absolute z-50 bg-white/95 backdrop-blur-md rounded-lg border border-slate-200 shadow-2xl overflow-hidden flex flex-col"
       style={{
         right: 20,
         top: 20,
@@ -117,8 +117,8 @@ export const DetailPanel = ({ node, data, loading, content, pathColors }) => {
         width: '360px',
       }}
     >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
-        <span className="text-sm font-semibold text-slate-200">Details</span>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+        <span className="text-sm font-semibold text-slate-800">Details</span>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
@@ -131,12 +131,12 @@ export const DetailPanel = ({ node, data, loading, content, pathColors }) => {
             >
               {node.root || node.path?.split('/')[1]}
             </span>
-            <span className="text-xs text-slate-400 capitalize">
+            <span className="text-xs text-slate-500 capitalize">
               {node.type?.replace('_', ' ')}
             </span>
           </div>
-          <h2 className="text-lg font-bold text-white break-words mt-2">{node.name}</h2>
-          <div className="text-xs text-slate-400 font-mono break-all mt-1">
+          <h2 className="text-lg font-bold text-slate-900 break-words mt-2">{node.name}</h2>
+          <div className="text-xs text-slate-500 font-mono break-all mt-1">
             {node.objectPath || node.path}
           </div>
         </div>
@@ -144,7 +144,7 @@ export const DetailPanel = ({ node, data, loading, content, pathColors }) => {
         {/* Parents (callers) */}
         {parents.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
               Called by ({parents.length})
             </h3>
             <NodeList nodes={parents} pathColors={pathColors} />
@@ -154,7 +154,7 @@ export const DetailPanel = ({ node, data, loading, content, pathColors }) => {
         {/* Children (callees) */}
         {children.length > 0 && (
           <div>
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
               Calls ({children.length})
             </h3>
             <NodeList nodes={children} pathColors={pathColors} />
@@ -162,15 +162,15 @@ export const DetailPanel = ({ node, data, loading, content, pathColors }) => {
         )}
 
         {parents.length === 0 && children.length === 0 && (
-          <div className="text-xs text-slate-500 italic">No connections</div>
+          <div className="text-xs text-slate-400 italic">No connections</div>
         )}
 
         {/* Description — fetched async */}
-        <div className="border-t border-slate-700 pt-3">
+        <div className="border-t border-slate-200 pt-3">
           {loading ? (
             <Spinner />
           ) : content ? (
-            <div className="prose prose-invert prose-sm max-w-none text-slate-300 [&_h1]:text-lg [&_h1]:text-white [&_h1]:mt-0 [&_h2]:text-base [&_h2]:text-slate-200 [&_h3]:text-sm [&_h3]:text-slate-300 [&_code]:bg-slate-900 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sky-300 [&_pre]:bg-slate-900 [&_pre]:border [&_pre]:border-slate-700 [&_pre]:rounded-lg [&_table]:text-xs [&_th]:text-slate-300 [&_td]:text-slate-400 [&_hr]:border-slate-700">
+            <div className="prose prose-sm max-w-none text-slate-700 [&_h1]:text-lg [&_h1]:text-slate-900 [&_h1]:mt-0 [&_h2]:text-base [&_h2]:text-slate-800 [&_h3]:text-sm [&_h3]:text-slate-700 [&_code]:bg-slate-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sky-700 [&_pre]:bg-slate-100 [&_pre]:border [&_pre]:border-slate-200 [&_pre]:rounded-lg [&_table]:text-xs [&_th]:text-slate-700 [&_td]:text-slate-500 [&_hr]:border-slate-200">
               <ReactMarkdown>{content}</ReactMarkdown>
             </div>
           ) : null}

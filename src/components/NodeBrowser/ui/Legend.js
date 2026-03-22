@@ -4,16 +4,16 @@ export const Legend = ({ pathColors }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="absolute top-4 left-4 bg-slate-900/90 backdrop-blur-sm rounded-xl border border-slate-800 shadow-xl max-w-xs">
+    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-xl border border-slate-200 shadow-xl max-w-xs">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-between w-full p-4 cursor-pointer text-left"
       >
-        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
           Object Categories
         </h3>
         <svg
-          className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`}
+          className={`w-3.5 h-3.5 text-slate-500 transition-transform duration-200 ${isOpen ? '' : '-rotate-90'}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -30,7 +30,7 @@ export const Legend = ({ pathColors }) => {
                 className="w-3 h-3 rounded-full shadow-sm"
                 style={{ backgroundColor: pathColors[key] }}
               ></span>
-              <span className="text-xs text-slate-300 font-medium">{key}</span>
+              <span className="text-xs text-slate-700 font-medium">{key}</span>
             </div>
           ))}
         </div>

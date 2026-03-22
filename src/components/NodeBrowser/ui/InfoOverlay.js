@@ -6,7 +6,7 @@ export const FunctionInfoOverlay = ({ node, pathColors }) => {
 
   return (
     <div
-      className="absolute z-50 pointer-events-none bg-slate-800/95 backdrop-blur-md p-4 rounded-lg border border-slate-700 shadow-2xl transition-opacity duration-200"
+      className="absolute z-50 pointer-events-none bg-white/95 backdrop-blur-md p-4 rounded-lg border border-slate-200 shadow-2xl transition-opacity duration-200"
       style={{
         left: 20,
         bottom: 20,
@@ -20,14 +20,14 @@ export const FunctionInfoOverlay = ({ node, pathColors }) => {
         >
           {node.root || node.path?.split('/')[1]}
         </span>
-        <span className="text-xs text-slate-400 capitalize">
+        <span className="text-xs text-slate-500 capitalize">
           {node.type?.replace('_', ' ')}
         </span>
       </div>
 
       <div className="mb-2">
-        <h2 className="text-lg font-bold text-white break-words">{node.name}</h2>
-        <div className="text-xs text-slate-400 font-mono break-all mt-1">
+        <h2 className="text-lg font-bold text-slate-900 break-words">{node.name}</h2>
+        <div className="text-xs text-slate-500 font-mono break-all mt-1">
           {node.path || node.objectPath}
         </div>
       </div>
@@ -40,7 +40,7 @@ export const ObjectInfoOverlay = ({ object, pathColors }) => {
 
   return (
     <div
-      className="absolute z-50 pointer-events-none bg-slate-800/95 backdrop-blur-md p-4 rounded-lg border border-slate-700 shadow-2xl transition-opacity duration-200"
+      className="absolute z-50 pointer-events-none bg-white/95 backdrop-blur-md p-4 rounded-lg border border-slate-200 shadow-2xl transition-opacity duration-200"
       style={{
         left: 20,
         bottom: 20,
@@ -56,25 +56,25 @@ export const ObjectInfoOverlay = ({ object, pathColors }) => {
         >
           {object.root || object.path.split('/')[1]}
         </span>
-        <span className="text-xs text-slate-400 capitalize">Object</span>
+        <span className="text-xs text-slate-500 capitalize">Object</span>
       </div>
 
       <div className="mb-3">
-        <h2 className="text-lg font-bold text-white break-words">
+        <h2 className="text-lg font-bold text-slate-900 break-words">
           {truncateObjectName(object.name)}
         </h2>
-        <div className="text-xs text-slate-400 font-mono break-all mt-1">{object.path}</div>
+        <div className="text-xs text-slate-500 font-mono break-all mt-1">{object.path}</div>
       </div>
 
-      <div className="border-t border-slate-700 pt-3">
-        <h3 className="text-sm font-semibold text-slate-300 mb-2">
+      <div className="border-t border-slate-200 pt-3">
+        <h3 className="text-sm font-semibold text-slate-700 mb-2">
           Functions ({object.functions.length})
         </h3>
         <div className="space-y-1 max-h-80 overflow-y-auto">
           {object.functions.map((func) => (
             <div
               key={func.id}
-              className="text-xs text-slate-300 bg-slate-900/50 px-2 py-1 rounded font-mono"
+              className="text-xs text-slate-700 bg-slate-100 px-2 py-1 rounded font-mono"
             >
               {func.name}
             </div>

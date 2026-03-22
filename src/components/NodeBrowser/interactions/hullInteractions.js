@@ -33,9 +33,9 @@ export const createHullInteractions = (ctx) => {
       .transition()
       .duration(200)
       .attr('font-size', '54px')
-      .attr('fill', '#fff')
+      .attr('fill', '#0f172a')
       .attr('fill-opacity', 1) // Full opacity on hover
-      .style('text-shadow', '0px 2px 4px rgba(0,0,0,1)')
+      .style('text-shadow', '0px 2px 4px rgba(255,255,255,1)')
       .text(getNodeLabel(d, specialLabels));
   };
 
@@ -55,9 +55,9 @@ export const createHullInteractions = (ctx) => {
       .transition()
       .duration(200)
       .attr('font-size', '24px')
-      .attr('fill', '#e2e8f0')
+      .attr('fill', '#334155')
       .attr('fill-opacity', (labelData) => getLabelOpacity(labelData, specialLabels))
-      .style('text-shadow', '0px 1px 2px rgba(0,0,0,0.8)')
+      .style('text-shadow', '0px 1px 2px rgba(255,255,255,0.8)')
       .text((labelData) => getNodeLabel(labelData, specialLabels));
   };
 
@@ -126,7 +126,7 @@ export const createHullInteractions = (ctx) => {
           .transition()
           .duration(200)
           .attr('r', 10)
-          .attr('stroke', '#fff')
+          .attr('stroke', '#475569')
           .attr('stroke-width', 3)
           .attr('filter', 'brightness(1.5)');
       }
@@ -147,9 +147,9 @@ export const createHullInteractions = (ctx) => {
         .transition()
         .duration(200)
         .attr('font-size', '24px')
-        .attr('fill', '#e2e8f0')
+        .attr('fill', '#334155')
         .attr('fill-opacity', (labelData) => getLabelOpacity(labelData, specialLabels))
-        .style('text-shadow', '0px 1px 2px rgba(0,0,0,0.8)')
+        .style('text-shadow', '0px 1px 2px rgba(255,255,255,0.8)')
         .text((labelData) => getNodeLabel(labelData, specialLabels));
 
       node
@@ -159,7 +159,7 @@ export const createHullInteractions = (ctx) => {
         .select('circle')
         .attr('fill', (n) => getPathColor(n.root || n.path, pathColors))
         .attr('r', 6)
-        .attr('stroke', '#fff')
+        .attr('stroke', '#475569')
         .attr('stroke-width', 1.5)
         .attr('filter', null);
 
@@ -168,7 +168,7 @@ export const createHullInteractions = (ctx) => {
       link
         .transition()
         .duration(200)
-        .attr('stroke', '#475569')
+        .attr('stroke', '#cbd5e1')
         .attr('stroke-opacity', 0.6)
         .attr('stroke-width', (l) => Math.sqrt(l.count || 1) * 2);
 
