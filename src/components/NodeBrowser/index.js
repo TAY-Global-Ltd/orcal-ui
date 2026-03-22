@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import '../../tailwind.css';
 import { useD3, useGraphData, useSearch, useKeyboardShortcuts, useSimulation } from './hooks';
 import {
@@ -7,6 +7,7 @@ import {
   Legend,
   FunctionInfoOverlay,
   ObjectInfoOverlay,
+  DetailPanel,
   ZoomControls,
   SearchButton,
   PathFinderButton,
@@ -18,6 +19,7 @@ const NodeBrowser = ({
   data,
   pathColors,
   onRefresh,
+  onNodeClick,
   specialLabels = {},
 }) => {
   // D3 loading
@@ -31,6 +33,38 @@ const NodeBrowser = ({
   const [clickedFunctionNode, setClickedFunctionNode] = useState(null);
   const [clickedObject, setClickedObject] = useState(null);
   const [pathHighlightActive, setPathHighlightActive] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailContent, setDetailContent] = useState(null);
+
+  // Detail panel: call onNodeClick when a function node is selected
+  const onNodeClickRef = useRef(onNodeClick);
+  onNodeClickRef.current = onNodeClick;
+  const detailRequestRef = useRef(0);
+
+  useEffect(() => {
+    if (!clickedFunctionNode || !onNodeClickRef.current) {
+      setDetailLoading(false);
+      setDetailContent(null);
+      return;
+    }
+    const requestId = ++detailRequestRef.current;
+    setDetailLoading(true);
+    setDetailContent(null);
+    Promise.resolve(onNodeClickRef.current(clickedFunctionNode)).then(
+      (content) => {
+        if (detailRequestRef.current === requestId) {
+          setDetailContent(content);
+          setDetailLoading(false);
+        }
+      },
+      () => {
+        if (detailRequestRef.current === requestId) {
+          setDetailContent('*Failed to load details.*');
+          setDetailLoading(false);
+        }
+      }
+    );
+  }, [clickedFunctionNode]);
 
   // Refs
   const svgRef = useRef(null);
@@ -245,6 +279,16 @@ const NodeBrowser = ({
         )}
 
         {clickedObject && <ObjectInfoOverlay object={clickedObject} pathColors={pathColors} />}
+
+        {onNodeClick && clickedFunctionNode && (
+          <DetailPanel
+            node={clickedFunctionNode}
+            data={data}
+            loading={detailLoading}
+            content={detailContent}
+            pathColors={pathColors}
+          />
+        )}
 
         <ZoomControls onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} />
 

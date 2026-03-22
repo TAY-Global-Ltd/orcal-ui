@@ -539,6 +539,38 @@ Combining all branch outputs into cohesive social content:
             const [nodeBrowserData, setNodeBrowserData] = React.useState(() => generateGraphData(35));
             const handleNodeBrowserRefresh = () => setNodeBrowserData(generateGraphData(35));
             const nodeBrowserSpecialLabels = { limbo: { label: 'limbo', opacity: 0.5 } };
+            const handleNodeClick = (node) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(
+                            '## Description\n\n' +
+                            '`' + node.name + '` is responsible for computing derived values based on market inputs. ' +
+                            'It uses the **Black-Scholes model** for option pricing under standard assumptions.\n\n' +
+                            '## Black-Scholes Formula\n\n' +
+                            'The price of a European call option is:\n\n' +
+                            '```\n' +
+                            'C = S₀ · N(d₁) - K · e^(-rT) · N(d₂)\n' +
+                            '```\n\n' +
+                            'Where:\n\n' +
+                            '```\n' +
+                            'd₁ = [ln(S₀/K) + (r + σ²/2) · T] / (σ · √T)\n' +
+                            'd₂ = d₁ - σ · √T\n' +
+                            '```\n\n' +
+                            '| Parameter | Description        | Value   |\n' +
+                            '|-----------|--------------------|---------|\n' +
+                            '| S₀        | Spot price         | 100.00  |\n' +
+                            '| K         | Strike price       | 105.00  |\n' +
+                            '| r         | Risk-free rate     | 0.05    |\n' +
+                            '| σ         | Volatility         | 0.20    |\n' +
+                            '| T         | Time to expiry (y) | 0.25    |\n\n' +
+                            '## Performance\n\n' +
+                            '- Avg latency: **12ms**\n' +
+                            '- Last run: 2026-03-22 09:14:03 UTC\n' +
+                            '- Cache hit rate: **94.2%**\n'
+                        );
+                    }, 2000);
+                });
+            };
 
             // TeamBuilder State
             const [activeNode, setActiveNode] = React.useState(null);
@@ -999,6 +1031,7 @@ Combining all branch outputs into cohesive social content:
                             data: nodeBrowserData,
                             pathColors: NODE_BROWSER_PATH_COLORS,
                             onRefresh: handleNodeBrowserRefresh,
+                            onNodeClick: handleNodeClick,
                             specialLabels: nodeBrowserSpecialLabels
                         })
                     )
