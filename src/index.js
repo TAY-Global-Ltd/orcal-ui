@@ -1,6 +1,7 @@
 import TeamBuilder from "./components/TeamBuilder";
 import KnowledgeGraph from "./components/KnowledgeGraph";
 import DecentralisedTeam from "./components/DecentralisedTeam";
+import NodeBrowser from "./components/NodeBrowser";
 
 /**
  * See the docs for more info on API versions:
@@ -181,5 +182,6 @@ export default {
         TeamBuilder,
         KnowledgeGraph,
         DecentralisedTeam,
+        NodeBrowser,
     },
 };

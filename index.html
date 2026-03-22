@@ -52,7 +52,7 @@
     <script type="module">
         import components from "./dist/orcal-ui.js";
 
-        const { TeamBuilder, KnowledgeGraph } = components.v1;
+        const { TeamBuilder, KnowledgeGraph, NodeBrowser } = components.v1;
 
         // Mock withBindings for local testing
         const withBindings = (Component) => (props) => {
@@ -470,6 +470,108 @@ Combining all branch outputs into cohesive social content:
                 setViewingAgent(agentPath);
             };
 
+            // NodeBrowser State
+            const NODE_BROWSER_PATH_COLORS = {
+                RefData: '#3b82f6',
+                TimeSeries: '#10b981',
+                TimeSeriesData: '#059669',
+                Env: '#ef4444',
+                MktData: '#f59e0b',
+                Assets: '#8b5cf6',
+                Instruments: '#ec4899',
+                limbo: '#6b7280',
+                Default: '#a1a1aa'
+            };
+
+            const generateGraphData = (objectCount = 35) => {
+                const objects = [];
+                const functions = [];
+                const calls = [];
+                const roots = ['RefData', 'TimeSeries', 'Env', 'MktData', 'Assets', 'Instruments', 'System'];
+                const subDirs = ['Europe', 'US', 'Asia', 'Derivatives', 'Spot', 'Bonds', 'Credit', 'Rates'];
+
+                for (let i = 0; i < objectCount; i++) {
+                    const root = roots[Math.floor(Math.random() * roots.length)];
+                    const sub = subDirs[Math.floor(Math.random() * subDirs.length)];
+                    const id = 'Obj_' + i;
+                    const name = root + '_' + sub + '_' + i;
+                    const path = '/' + root + '/' + sub + '/' + name;
+                    objects.push({ id: id, name: name, path: path, root: root });
+                }
+
+                let funcIdCounter = 0;
+                objects.forEach(function(obj) {
+                    const numFuncs = 3 + Math.floor(Math.random() * 6);
+                    for (let j = 0; j < numFuncs; j++) {
+                        const fnName = ['calc', 'get', 'fetch', 'compute', 'validate', 'sync', 'broadcast'][Math.floor(Math.random() * 7)];
+                        const suffix = ['Value', 'Price', 'Risk', 'Nav', 'Vol', 'Rate', 'Status'][Math.floor(Math.random() * 7)];
+                        functions.push({
+                            id: 'fn_' + (funcIdCounter++),
+                            objectId: obj.id,
+                            name: fnName + suffix,
+                            objectPath: obj.path,
+                            root: obj.root
+                        });
+                    }
+                });
+
+                functions.forEach(function(sourceFn) {
+                    const numCalls = Math.floor(Math.random() * 4);
+                    for (let k = 0; k < numCalls; k++) {
+                        let targetFn;
+                        if (Math.random() > 0.4) {
+                            targetFn = functions[Math.floor(Math.random() * functions.length)];
+                        } else {
+                            const sameObjFuncs = functions.filter(function(f) { return f.objectId === sourceFn.objectId && f.id !== sourceFn.id; });
+                            if (sameObjFuncs.length > 0) {
+                                targetFn = sameObjFuncs[Math.floor(Math.random() * sameObjFuncs.length)];
+                            }
+                        }
+                        if (targetFn && targetFn.id !== sourceFn.id) {
+                            calls.push({ source: sourceFn.id, target: targetFn.id });
+                        }
+                    }
+                });
+
+                return { objects: objects, functions: functions, calls: calls, root: functions.length > 0 ? functions[0].id : null };
+            };
+
+            const [nodeBrowserData, setNodeBrowserData] = React.useState(() => generateGraphData(35));
+            const handleNodeBrowserRefresh = () => setNodeBrowserData(generateGraphData(35));
+            const nodeBrowserSpecialLabels = { limbo: { label: 'limbo', opacity: 0.5 } };
+            const handleNodeClick = (node) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(
+                            '## Description\n\n' +
+                            '`' + node.name + '` is responsible for computing derived values based on market inputs. ' +
+                            'It uses the **Black-Scholes model** for option pricing under standard assumptions.\n\n' +
+                            '## Black-Scholes Formula\n\n' +
+                            'The price of a European call option is:\n\n' +
+                            '```\n' +
+                            'C = S₀ · N(d₁) - K · e^(-rT) · N(d₂)\n' +
+                            '```\n\n' +
+                            'Where:\n\n' +
+                            '```\n' +
+                            'd₁ = [ln(S₀/K) + (r + σ²/2) · T] / (σ · √T)\n' +
+                            'd₂ = d₁ - σ · √T\n' +
+                            '```\n\n' +
+                            '| Parameter | Description        | Value   |\n' +
+                            '|-----------|--------------------|---------|\n' +
+                            '| S₀        | Spot price         | 100.00  |\n' +
+                            '| K         | Strike price       | 105.00  |\n' +
+                            '| r         | Risk-free rate     | 0.05    |\n' +
+                            '| σ         | Volatility         | 0.20    |\n' +
+                            '| T         | Time to expiry (y) | 0.25    |\n\n' +
+                            '## Performance\n\n' +
+                            '- Avg latency: **12ms**\n' +
+                            '- Last run: 2026-03-22 09:14:03 UTC\n' +
+                            '- Cache hit rate: **94.2%**\n'
+                        );
+                    }, 2000);
+                });
+            };
+
             // TeamBuilder State
             const [activeNode, setActiveNode] = React.useState(null);
             const [currentMessage, setCurrentMessage] = React.useState(null);
@@ -716,7 +818,19 @@ Combining all branch outputs into cohesive social content:
                             fontWeight: '600',
                             cursor: 'pointer'
                         }
-                    }, 'Decentralised Team')
+                    }, 'Decentralised Team'),
+                    React.createElement('button', {
+                        onClick: () => handleTabChange('node-browser'),
+                        style: {
+                            padding: '10px 20px',
+                            backgroundColor: activeTab === 'node-browser' ? '#0d9488' : '#e2e8f0',
+                            color: activeTab === 'node-browser' ? 'white' : '#64748b',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontWeight: '600',
+                            cursor: 'pointer'
+                        }
+                    }, 'Node Browser')
                 ),
 
                 // Team Builder Content
@@ -887,6 +1001,38 @@ Combining all branch outputs into cohesive social content:
                             activeAgentId: activeAgentIds,
                             agentTree: AGENT_TREE_DEMO,
                             onAgentView: handleViewAgent
+                        })
+                    )
+                ),
+
+                // Node Browser Content
+                activeTab === 'node-browser' && React.createElement('div', {
+                    className: 'component-section',
+                    style: {
+                        backgroundColor: '#f0fdfa',
+                        padding: '16px',
+                        border: '1px solid #0d9488',
+                        borderRadius: '8px'
+                    }
+                },
+                    React.createElement('span', { className: 'component-label' }, 'NodeBrowser - Dependency Graph Visualizer'),
+                    React.createElement('p', { style: { marginBottom: '12px', fontSize: '14px', color: '#64748b' } },
+                        'Interactive D3.js force-directed graph showing function dependencies grouped by object. Click nodes to inspect, use search (/) to find functions, and explore paths between nodes.'
+                    ),
+                    React.createElement('div', {
+                        style: {
+                            height: '700px',
+                            position: 'relative',
+                            borderRadius: '8px',
+                            overflow: 'hidden'
+                        }
+                    },
+                        React.createElement(NodeBrowser, {
+                            data: nodeBrowserData,
+                            pathColors: NODE_BROWSER_PATH_COLORS,
+                            onRefresh: handleNodeBrowserRefresh,
+                            onNodeClick: handleNodeClick,
+                            specialLabels: nodeBrowserSpecialLabels
                         })
                     )
                 ),
