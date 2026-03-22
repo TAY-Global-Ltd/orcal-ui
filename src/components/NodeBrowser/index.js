@@ -8,6 +8,7 @@ import {
   FunctionInfoOverlay,
   ObjectInfoOverlay,
   DetailPanel,
+  ObjectDetailPanel,
   ZoomControls,
   SearchButton,
   PathFinderButton,
@@ -65,6 +66,19 @@ const NodeBrowser = ({
       }
     );
   }, [clickedFunctionNode]);
+
+  // Handler to select a function node from the object detail panel
+  const handleDetailNodeClick = useCallback(
+    (nodeId) => {
+      if (window.__resetObjectClick) {
+        window.__resetObjectClick();
+      }
+      if (window.__clickNodeById) {
+        window.__clickNodeById(nodeId);
+      }
+    },
+    []
+  );
 
   // Refs
   const svgRef = useRef(null);
@@ -278,7 +292,9 @@ const NodeBrowser = ({
           <FunctionInfoOverlay node={clickedFunctionNode} pathColors={pathColors} />
         )}
 
-        {clickedObject && <ObjectInfoOverlay object={clickedObject} pathColors={pathColors} />}
+        {clickedObject && clickedFunctionNode && (
+          <ObjectInfoOverlay object={clickedObject} pathColors={pathColors} />
+        )}
 
         {onNodeClick && clickedFunctionNode && (
           <DetailPanel
@@ -287,6 +303,14 @@ const NodeBrowser = ({
             loading={detailLoading}
             content={detailContent}
             pathColors={pathColors}
+          />
+        )}
+
+        {clickedObject && (
+          <ObjectDetailPanel
+            object={clickedObject}
+            pathColors={pathColors}
+            onClickNode={handleDetailNodeClick}
           />
         )}
 
