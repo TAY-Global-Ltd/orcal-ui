@@ -115,10 +115,10 @@ const NodeBrowser = ({
     pathSearch.openSearch();
   }, [pathHighlightActive, pathSearch, search]);
 
-  const handlePanToRoot = useCallback(() => {
+  const handleGoToRoot = useCallback(() => {
     if (!data.root) return;
-    if (window.__panToNodeById) {
-      window.__panToNodeById(data.root);
+    if (window.__clickNodeById) {
+      window.__clickNodeById(data.root);
     }
   }, [data.root]);
 
@@ -248,7 +248,7 @@ const NodeBrowser = ({
 
         <ZoomControls onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} />
 
-        {data.root && <HomeButton onClick={handlePanToRoot} />}
+        {data.root && <HomeButton onClick={handleGoToRoot} />}
         {(clickedFunctionNode || data.root) && <PathFinderButton onClick={openPathSearch} />}
 
         <SearchButton onClick={openSearch} />

@@ -471,7 +471,20 @@ export const useSimulation = ({
       return true;
     };
 
+    const clickNodeById = (nodeId) => {
+      let clicked = false;
+      node.each(function (d) {
+        if (d.id === nodeId) {
+          const event = new MouseEvent('click', { bubbles: true });
+          this.dispatchEvent(event);
+          clicked = true;
+        }
+      });
+      return clicked;
+    };
+
     window.__panToNodeById = panToNodeById;
+    window.__clickNodeById = clickNodeById;
     window.__highlightPathBetweenNodes = highlightPathBetweenNodes;
     window.__clearPathHighlight = clearPathHighlight;
 
@@ -528,6 +541,7 @@ export const useSimulation = ({
       simulation.stop();
       clearPathHighlight();
       delete window.__panToNodeById;
+      delete window.__clickNodeById;
       delete window.__highlightPathBetweenNodes;
       delete window.__clearPathHighlight;
     };

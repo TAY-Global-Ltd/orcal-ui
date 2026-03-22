@@ -19,7 +19,7 @@ export const HomeButton = ({ onClick }) => {
     <button
       onClick={onClick}
       className="absolute top-4 right-24 bg-slate-900/90 backdrop-blur-sm p-2 rounded-lg border border-slate-800 shadow-xl hover:bg-slate-800 transition-colors"
-      title="Pan to root node"
+      title="Go to root node"
     >
       <Home className="w-5 h-5 text-emerald-400" />
     </button>
