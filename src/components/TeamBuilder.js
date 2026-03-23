@@ -201,11 +201,6 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
     const originX = ((nodeCenterX - bubbleX) / bubbleWidth) * 100;
     const originY = ((nodeCenterY - bubbleY) / bubbleHeight) * 100;
 
-    // Calculate the offset needed to shrink toward node center
-    // When scaling to 0 at the origin point, we need to translate so the origin point moves to node center
-    const offsetX = nodeCenterX - bubbleX;
-    const offsetY = nodeCenterY - bubbleY;
-
     // Get animation style based on state
     let animationStyle = {};
     let baseTransform = `translate(${bubbleX}px, ${bubbleY}px)`;
@@ -315,7 +310,9 @@ function TeamBuilder({
     currentMessage,
     handlePrompt,
     isFollowingActive: shouldFollow,
-    showPrompt = !activeNode
+    showPrompt = !activeNode,
+    handleCreateAgent,
+    handleCancel,
 }) {
     const [nodes, setNodes] = useState(initialNodes);
     const [edges, setEdges] = useState(initialEdges);
@@ -387,6 +384,39 @@ function TeamBuilder({
         panRef.current = pan;
     }, [pan]);
 
+    const recenterGrid = useCallback(() => {
+        if (!containerRef.current) return;
+
+        const startPan = { ...panRef.current };
+        const startTime = performance.now();
+        const duration = 500;
+
+        isAutoPanningRef.current = true;
+
+        const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            const newPan = {
+                x: startPan.x * (1 - eased),
+                y: startPan.y * (1 - eased),
+            };
+            setPan(newPan);
+
+            if (progress < 1) {
+                animationFrameRef.current = requestAnimationFrame(animate);
+            } else {
+                isAutoPanningRef.current = false;
+            }
+        };
+
+        if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+        }
+        animationFrameRef.current = requestAnimationFrame(animate);
+    }, []);
+
     // --- Pan to Active Node ---
     const panToActiveNode = useCallback(() => {
         if (!activeNode || !containerRef.current) return;
@@ -396,7 +426,6 @@ function TeamBuilder({
 
         const nodeHeight = nodeHeights[activeNodeData.id] || 88;
         const nodeWidth = 256;
-        const bubbleHeight = 280;
         const containerWidth = containerRef.current.clientWidth;
         const containerHeight = containerRef.current.clientHeight;
 
@@ -724,6 +753,16 @@ function TeamBuilder({
                         )
                     )}
 
+                    {handleCreateAgent && !isEditing && (
+                        <button
+                            onClick={() => handleCreateAgent()}
+                            className="flex items-center gap-[8px] bg-indigo-600 hover:bg-indigo-700 text-white px-[16px] py-[8px] rounded-[6px] text-[14px] font-medium transition-colors shadow-sm"
+                            style={{ color: '#fff' }}
+                        >
+                            <Plus size={16} /> Create Agent
+                        </button>
+                    )}
+
                     {!isEditing ? (
                         <button
                             onClick={handleEditClick}
@@ -767,6 +806,31 @@ function TeamBuilder({
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
             >
+                <div
+                    className="flex items-center gap-[8px] pointer-events-auto"
+                    style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 20 }}
+                >
+                    {handleCancel && activeNode && (
+                        <button
+                            onClick={() => handleCancel()}
+                            className="flex items-center gap-[6px] bg-red-600 hover:bg-red-700 text-white px-[12px] py-[6px] rounded-[8px] text-[12px] font-medium transition-colors shadow-sm"
+                            style={{ color: 'white' }}
+                            title="Cancel the current conversation"
+                        >
+                            <X size={14} />
+                            Cancel Converse
+                        </button>
+                    )}
+                    <button
+                        onClick={recenterGrid}
+                        className="flex items-center gap-[6px] bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 px-[12px] py-[6px] rounded-[8px] text-[12px] font-medium transition-colors shadow-sm"
+                        title="Recenter grid"
+                    >
+                        <Home size={14} />
+                        Recenter
+                    </button>
+                </div>
+
                 {/* Transform Container for Pan/Zoom */}
                 <div
                     style={{
@@ -1052,4 +1116,3 @@ function TeamBuilder({
 }
 
 export default ({ withBindings }) => withBindings(TeamBuilder);
-
