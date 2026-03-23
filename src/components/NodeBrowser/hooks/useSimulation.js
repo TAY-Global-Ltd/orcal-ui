@@ -164,7 +164,7 @@ export const useSimulation = ({
       .selectAll('line')
       .data(visibleLinks)
       .join('line')
-      .attr('stroke', '#475569')
+      .attr('stroke', '#cbd5e1')
       .attr('stroke-opacity', 0.6)
       .attr('stroke-width', (d) => Math.sqrt(d.count || 1) * 2)
       .attr('marker-end', 'url(#arrow-default)');
@@ -200,7 +200,7 @@ export const useSimulation = ({
       .append('circle')
       .attr('r', (d) => d.r)
       .attr('fill', (d) => getPathColor(d.root || d.path, pathColors))
-      .attr('stroke', '#fff')
+      .attr('stroke', '#475569')
       .attr('stroke-width', 1.5)
       .attr('cursor', 'pointer');
 
@@ -209,7 +209,7 @@ export const useSimulation = ({
       .append('path')
       .attr('d', 'M-5 1 L0 -4 L5 1 V6 H2 V2 H-2 V6 H-5 Z')
       .attr('fill', 'none')
-      .attr('stroke', '#fff')
+      .attr('stroke', '#475569')
       .attr('stroke-width', 1.5)
       .attr('stroke-linejoin', 'round')
       .attr('pointer-events', 'none');
@@ -254,13 +254,13 @@ export const useSimulation = ({
       .text((d) => getNodeLabel(d, specialLabels))
       .attr('font-size', '24px')
       .attr('font-weight', 'bold')
-      .attr('fill', '#e2e8f0')
+      .attr('fill', '#334155')
       .attr('fill-opacity', (d) => getLabelOpacity(d, specialLabels))
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
       .style('pointer-events', 'auto')
       .style('cursor', 'pointer')
-      .style('text-shadow', '0px 1px 2px rgba(0,0,0,0.8)');
+      .style('text-shadow', '0px 1px 2px rgba(255,255,255,0.8)');
 
     // 4. HULLS
     const groupData = graphData.groups

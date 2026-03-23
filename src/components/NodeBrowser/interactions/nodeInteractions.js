@@ -21,7 +21,7 @@ export const createNodeInteractions = (ctx) => {
       .duration(200)
       .attr('r', 12)
       .attr('fill', d3.color(baseColor)?.brighter(0.8)?.toString() || '#fff')
-      .attr('stroke', '#fff')
+      .attr('stroke', '#475569')
       .attr('stroke-width', 3);
 
     // 2. Add Label
@@ -31,10 +31,10 @@ export const createNodeInteractions = (ctx) => {
       .attr('x', 15)
       .attr('y', 5)
       .attr('class', 'node-label')
-      .attr('fill', '#fff')
+      .attr('fill', '#0f172a')
       .attr('font-size', '16px')
       .attr('font-weight', 'bold')
-      .style('text-shadow', '0px 2px 4px rgba(0,0,0,0.8)')
+      .style('text-shadow', '0px 2px 4px rgba(255,255,255,0.8)')
       .style('pointer-events', 'none')
       .style('opacity', 0)
       .transition()
@@ -67,7 +67,7 @@ export const createNodeInteractions = (ctx) => {
       .duration(200)
       .attr('r', 6)
       .attr('fill', getPathColor(d.root || d.path, pathColors))
-      .attr('stroke', '#fff')
+      .attr('stroke', '#475569')
       .attr('stroke-width', 1.5);
 
     // Remove Label
@@ -115,7 +115,7 @@ export const createNodeInteractions = (ctx) => {
       .transition()
       .duration(200)
       .attr('r', 12)
-      .attr('stroke', '#fff')
+      .attr('stroke', '#475569')
       .attr('stroke-width', 3)
       .attr('filter', 'brightness(1.5)');
 
@@ -185,7 +185,7 @@ export const createNodeInteractions = (ctx) => {
           .duration(200)
           .attr('fill', neighborColor)
           .attr('r', 8)
-          .attr('stroke', '#fff')
+          .attr('stroke', '#475569')
           .attr('stroke-width', 2);
 
         // Add label for connected function node
@@ -198,7 +198,7 @@ export const createNodeInteractions = (ctx) => {
           .attr('fill', neighborColor)
           .attr('font-size', '14px')
           .attr('font-weight', 'bold')
-          .style('text-shadow', '0px 2px 4px rgba(0,0,0,0.8)')
+          .style('text-shadow', '0px 2px 4px rgba(255,255,255,0.8)')
           .style('pointer-events', 'none')
           .style('opacity', 0)
           .transition()
@@ -219,7 +219,7 @@ export const createNodeInteractions = (ctx) => {
         .duration(200)
         .attr('r', 6)
         .attr('fill', getPathColor(d.root || d.path, pathColors))
-        .attr('stroke', '#fff')
+        .attr('stroke', '#475569')
         .attr('stroke-width', 1.5)
         .attr('filter', null);
 
@@ -229,7 +229,7 @@ export const createNodeInteractions = (ctx) => {
       link
         .transition()
         .duration(200)
-        .attr('stroke', '#475569')
+        .attr('stroke', '#cbd5e1')
         .attr('stroke-opacity', 0.6)
         .attr('stroke-width', (l) => Math.sqrt(l.count || 1) * 2)
         .attr('marker-end', 'url(#arrow-default)');
@@ -246,7 +246,7 @@ export const createNodeInteractions = (ctx) => {
         .select('circle')
         .attr('fill', (n) => getPathColor(n.root || n.path, pathColors))
         .attr('r', 6)
-        .attr('stroke', '#fff')
+        .attr('stroke', '#475569')
         .attr('stroke-width', 1.5);
 
       svg.on('click.function-reset', null);

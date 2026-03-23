@@ -210,19 +210,19 @@ const NodeBrowser = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-900 text-white">
+      <div className="flex items-center justify-center h-screen bg-slate-50 text-slate-900">
         Loading Physics Engine...
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-200 font-sans overflow-hidden">
+    <div className="flex flex-col h-screen bg-white text-slate-800 font-sans overflow-hidden">
       <Header data={data} onRefresh={onRefresh} />
       <StatusBar text={statusBarText} />
 
       {/* Main Canvas Area */}
-      <div className="relative flex-1 bg-slate-950 overflow-hidden cursor-move">
+      <div className="relative flex-1 bg-white overflow-hidden cursor-move">
         <svg ref={svgRef} className="w-full h-full block">
           <defs>
             {/* Default Arrow */}
@@ -235,7 +235,7 @@ const NodeBrowser = ({
               markerHeight="6"
               orient="auto"
             >
-              <path d="M0,-5L10,0L0,5" fill="#475569" fillOpacity="0.5" />
+              <path d="M0,-5L10,0L0,5" fill="#cbd5e1" fillOpacity="0.5" />
             </marker>
 
             {/* Input Arrow (Green) */}
