@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import AgentNode from './AgentNode';
 import "../tailwind.css";
 import { Settings, X, Plus, Play, Trash2, ChevronRight, ChevronDown, Check, Users, Save, Pencil, Home, AlertTriangle, Eye, Edit, Send, RotateCcw } from 'lucide-react';
@@ -46,6 +47,37 @@ const markdownComponents = {
     ),
     strong: ({ children }) => <strong>{children}</strong>,
     em: ({ children }) => <em>{children}</em>,
+    table: ({ children }) => (
+        <div className="my-2 overflow-x-auto">
+            <table className="min-w-full border-collapse border border-slate-300 text-xs">
+                {children}
+            </table>
+        </div>
+    ),
+    thead: ({ children }) => <thead className="bg-slate-100">{children}</thead>,
+    tbody: ({ children }) => <tbody>{children}</tbody>,
+    tr: ({ children }) => <tr className="border-b border-slate-200">{children}</tr>,
+    th: ({ children }) => (
+        <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-700">
+            {children}
+        </th>
+    ),
+    td: ({ children }) => (
+        <td className="border border-slate-300 px-2 py-1 align-top text-slate-800">
+            {children}
+        </td>
+    ),
+    hr: () => <hr className="my-3 border-slate-200" />,
+    blockquote: ({ children }) => (
+        <blockquote className="border-l-4 border-slate-300 pl-3 my-2 text-slate-600 italic">
+            {children}
+        </blockquote>
+    ),
+    a: ({ href, children }) => (
+        <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+            {children}
+        </a>
+    ),
 };
 
 // Calculate Bezier curve path
@@ -287,7 +319,9 @@ const SpeechBubble = ({ activeNode, nodes, nodeHeights, currentMessage, pan, con
                             maxHeight: `${bubbleHeight}px`,
                         }}
                     >
-                        <ReactMarkdown components={markdownComponents}>{displayMessage.message}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                            {displayMessage.message}
+                        </ReactMarkdown>
                     </div>
                 </div>
             </div>

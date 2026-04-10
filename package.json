@@ -1,7 +1,7 @@
 {
   "name": "orcal-ui",
   "description": "Corca UI Components",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "main": "dist/orcal-ui.js",
   "module": "dist/orcal-ui.js",
   "files": [
@@ -19,7 +19,8 @@
   },
   "dependencies": {
     "lucide-react": "^0.562.0",
-    "react-markdown": "^10.1.0"
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.21.3",
